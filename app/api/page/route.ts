@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { pickSimulatedTxHash } from "@/lib/arc-testnet";
+import { generateSimulatedTxHash } from "@/lib/arc-testnet";
 import { getBotName, isAIBot } from "@/lib/bot-detector";
 import { verifyArcSignature } from "@/lib/gateway";
 import { savePayment } from "@/lib/supabase";
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
       ? paymentSignature!
       : `0x${paymentSignature!}`;
   } else {
-    tx_hash = pickSimulatedTxHash();
+    tx_hash = generateSimulatedTxHash();
   }
 
   try {

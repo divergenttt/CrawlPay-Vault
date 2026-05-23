@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import { PaymentsTable } from "@/components/payments-table";
 import RevenueChart from "@/components/revenue-chart";
-import type { ChartDay, Payment } from "@/lib/types";
+import type {
+  ChartDay,
+  DashboardStats,
+  GatewayBalance,
+  Payment,
+  PaymentsPage,
+} from "@/lib/types";
 import type { CSSProperties } from "react";
 
 const pageStyle: CSSProperties = {
@@ -24,6 +30,13 @@ const cardStyle: CSSProperties = {
 const gridStyle: CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(4, 1fr)",
+  gap: "1rem",
+  marginBottom: "1.5rem",
+};
+
+const balanceGridStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, 1fr)",
   gap: "1rem",
   marginBottom: "1.5rem",
 };
@@ -79,6 +92,11 @@ function formatUsdc(amount: number): string {
   return `$${amount.toFixed(3)} USDC`;
 }
 
+function formatBalanceUsdc(amount: string | undefined, hasError: boolean): string {
+  if (hasError || amount == null) return "— USDC";
+  return `${amount} USDC`;
+}
+
 function dateKeyLocal(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
@@ -112,22 +130,76 @@ function buildChartData(payments: Payment[]): ChartDay[] {
   }));
 }
 
+const EMPTY_STATS: DashboardStats = {
+  total_earned: 0,
+  total_requests: 0,
+  unique_bots: 0,
+  today_earned: 0,
+};
+
 export default function DashboardPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS);
+  const [balance, setBalance] = useState<GatewayBalance | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  async function fetchData() {
+  async function fetchBalance() {
     try {
-      const res = await fetch(`/api/payments?t=${Date.now()}`, {
+      const res = await fetch(`/api/balance?t=${Date.now()}`, {
         cache: "no-store",
         headers: { "Cache-Control": "no-cache" },
       });
       if (!res.ok) {
+        console.error("Balance fetch error:", res.status, res.statusText);
+        setBalance({ wallet: "0", available: "0", total: "0", withdrawing: "0", error: res.statusText });
+        return;
+      }
+      const data: GatewayBalance = await res.json();
+      setBalance(data);
+    } catch (err) {
+      console.error("Balance fetch error:", err);
+      setBalance({
+        wallet: "0",
+        available: "0",
+        total: "0",
+        withdrawing: "0",
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  async function fetchStats() {
+    try {
+      const res = await fetch(`/api/stats?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
+      if (!res.ok) {
+        console.error("Stats fetch error:", res.status, res.statusText);
+        return;
+      }
+      const data: DashboardStats = await res.json();
+      setStats(data);
+    } catch (err) {
+      console.error("Stats fetch error:", err);
+    }
+  }
+
+  async function fetchData() {
+    try {
+      const res = await fetch(
+        `/api/payments?page=1&limit=100&t=${Date.now()}`,
+        {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache" },
+        }
+      );
+      if (!res.ok) {
         console.error("Fetch error:", res.status, res.statusText);
         return;
       }
-      const data = await res.json();
-      setPayments(Array.isArray(data) ? data : []);
+      const body: PaymentsPage | Payment[] = await res.json();
+      setPayments(Array.isArray(body) ? body : (body.data ?? []));
       setLastUpdated(new Date());
     } catch (err) {
       console.error("Fetch error:", err);
@@ -140,23 +212,38 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const totalEarned = payments.reduce((sum, p) => sum + toNumber(p.amount_usdc), 0);
-  const totalRequests = payments.length;
-  const uniqueBots = new Set(payments.map((p) => p.bot_name)).size;
+  useEffect(() => {
+    fetchStats();
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayEarned = payments
-    .filter((p) => new Date(p.created_at) >= todayStart)
-    .reduce((sum, p) => sum + toNumber(p.amount_usdc), 0);
+  useEffect(() => {
+    fetchBalance();
+    const interval = setInterval(fetchBalance, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const chartData = buildChartData(payments);
 
-  const stats = [
-    { label: "Total Earned", value: formatUsdc(totalEarned) },
-    { label: "Total Requests", value: String(totalRequests) },
-    { label: "Unique Bots", value: String(uniqueBots) },
-    { label: "Today", value: formatUsdc(todayEarned) },
+  const balanceError = Boolean(balance?.error);
+
+  const statCards = [
+    { label: "Total Earned", value: formatUsdc(stats.total_earned) },
+    { label: "Total Requests", value: String(stats.total_requests) },
+    { label: "Unique Bots", value: String(stats.unique_bots) },
+    { label: "Today", value: formatUsdc(stats.today_earned) },
+  ];
+
+  const balanceStats = [
+    {
+      label: "Gateway Available",
+      value: formatBalanceUsdc(balance?.available, balanceError),
+    },
+    {
+      label: "Wallet Balance",
+      value: formatBalanceUsdc(balance?.wallet, balanceError),
+    },
   ];
 
   return (
@@ -229,7 +316,16 @@ export default function DashboardPage() {
       </div>
 
       <div style={gridStyle}>
-        {stats.map((stat) => (
+        {statCards.map((stat) => (
+          <div key={stat.label} style={cardStyle}>
+            <p style={cardLabelStyle}>{stat.label}</p>
+            <p style={cardValueStyle}>{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div style={balanceGridStyle}>
+        {balanceStats.map((stat) => (
           <div key={stat.label} style={cardStyle}>
             <p style={cardLabelStyle}>{stat.label}</p>
             <p style={cardValueStyle}>{stat.value}</p>

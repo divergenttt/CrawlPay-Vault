@@ -13,8 +13,25 @@ export type ChartDay = {
   revenue: number;
 };
 
+export interface PaymentsPage {
+  data: Payment[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
+export interface DashboardStats {
+  total_earned: number;
+  total_requests: number;
+  unique_bots: number;
+  today_earned: number;
+}
+
 export interface GatewayBalance {
+  wallet: string;
   total: string;
   available: string;
   withdrawing: string;
+  error?: string;
 }
