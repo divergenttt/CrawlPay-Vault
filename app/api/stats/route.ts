@@ -5,52 +5,72 @@ import type { DashboardStats } from "@/lib/types";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+type PaymentStatsRow = {
+  amount_usdc: number | string;
+  bot_name: string;
+  created_at: string;
+};
+
 function toNumber(value: unknown): number {
   if (value == null) return 0;
   return typeof value === "number" ? value : parseFloat(String(value)) || 0;
 }
 
-function todayMidnightUtcIso(): string {
+function todayMidnightUtcMs(): number {
   const start = new Date();
   start.setUTCHours(0, 0, 0, 0);
-  return start.toISOString();
+  return start.getTime();
+}
+
+function formatErrorResponse(err: unknown) {
+  const details =
+    err instanceof Error
+      ? { name: err.name, message: err.message, stack: err.stack }
+      : err;
+
+  return {
+    error: JSON.stringify(details),
+    details,
+  };
+}
+
+function computeStats(payments: PaymentStatsRow[]): DashboardStats {
+  const todayStartMs = todayMidnightUtcMs();
+
+  let total_earned = 0;
+  let today_earned = 0;
+
+  for (const p of payments) {
+    const amount = toNumber(p.amount_usdc);
+    total_earned += amount;
+    if (new Date(p.created_at).getTime() >= todayStartMs) {
+      today_earned += amount;
+    }
+  }
+
+  return {
+    total_earned,
+    total_requests: payments.length,
+    unique_bots: new Set(payments.map((p) => p.bot_name)).size,
+    today_earned,
+  };
 }
 
 export async function GET() {
-  const todayIso = todayMidnightUtcIso();
-
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      const [allTime, today, uniqueBots] = await Promise.all([
-        supabase
-          .from("payments")
-          .select("total_earned:amount_usdc.sum(), total_requests:id.count()")
-          .maybeSingle(),
-        supabase
-          .from("payments")
-          .select("today_earned:amount_usdc.sum()")
-          .gte("created_at", todayIso)
-          .maybeSingle(),
-        supabase
-          .from("payments")
-          .select("bot_name, id.count()", { count: "exact", head: true }),
-      ]);
+      const { data, error } = await supabase
+        .from("payments")
+        .select("amount_usdc, bot_name, created_at")
+        .limit(10000);
 
-      if (allTime.error) throw allTime.error;
-      if (today.error) throw today.error;
-      if (uniqueBots.error) throw uniqueBots.error;
+      if (error) throw error;
 
-      const stats: DashboardStats = {
-        total_earned: toNumber(allTime.data?.total_earned),
-        total_requests: toNumber(allTime.data?.total_requests),
-        unique_bots: uniqueBots.count ?? 0,
-        today_earned: toNumber(today.data?.today_earned),
-      };
-
-      return NextResponse.json(stats);
+      return NextResponse.json(computeStats(data ?? []));
     } catch (err) {
+      console.error(`Stats API error (attempt ${attempt}/3):`, err);
       if (attempt === 3) {
-        return NextResponse.json({ error: String(err) }, { status: 500 });
+        return NextResponse.json(formatErrorResponse(err), { status: 500 });
       }
       await new Promise((r) => setTimeout(r, attempt * 500));
     }
