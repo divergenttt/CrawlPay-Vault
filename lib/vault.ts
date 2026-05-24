@@ -121,6 +121,15 @@ export async function uploadVault(
       accessAuxData: "0x",
     });
 
+    console.log(
+      "Upload result:",
+      JSON.stringify(
+        result,
+        (_, value) => (typeof value === "bigint" ? value.toString() : value),
+        2
+      )
+    );
+
     return { uuid: result.uuid, cid: result.cid };
   } catch (error) {
     throw new Error(`Failed to upload CDR vault: ${formatCause(error)}`, {
