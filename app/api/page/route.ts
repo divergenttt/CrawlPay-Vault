@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateSimulatedTxHash } from "@/lib/arc-testnet";
-import { getBotName, isAIBot } from "@/lib/bot-detector";
-import { verifyArcSignature } from "@/lib/gateway";
-import { savePayment } from "@/lib/supabase";
-import { accessVault } from "@/lib/vault";
+import { generateSimulatedTxHash } from "@/lib/arc";
+import { accessVault } from "@/lib/cdr/vault";
+import { getBotName, isAIBot } from "@/lib/detection/bot-detector";
+import { verifyArcSignature } from "@/lib/payments/gateway";
+import { savePayment } from "@/lib/payments/supabase";
 
 const AMOUNT_USDC = 0.001;
 

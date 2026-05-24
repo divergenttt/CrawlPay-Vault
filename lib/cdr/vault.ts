@@ -1,6 +1,6 @@
 import type { StorageProvider } from "@piplabs/cdr-sdk";
 import { encodeAbiParameters, parseAbiParameters } from "viem";
-import { getCDRClient } from "./cdr-client";
+import { getCDRClient } from "./client";
 
 const PINATA_API_URL = "https://api.pinata.cloud";
 const PINATA_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs";

@@ -11,7 +11,7 @@ async function main() {
     );
   }
 
-  const { accessVault } = await import("../lib/vault");
+  const { accessVault } = await import("../lib/cdr/vault");
 
   console.log(`Accessing CDR vault uuid=${uuid}...`);
 

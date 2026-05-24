@@ -11,7 +11,7 @@ CREATE TABLE payments (
 */
 
 import { createClient } from "@supabase/supabase-js";
-import type { Payment } from "./types";
+import type { Payment } from "../types";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;

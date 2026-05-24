@@ -29,7 +29,7 @@ const payload = {
 };
 
 async function main() {
-  const { uploadVault } = await import("../lib/vault");
+  const { uploadVault } = await import("../lib/cdr/vault");
 
   console.log("Uploading premium dataset to CDR vault...");
 

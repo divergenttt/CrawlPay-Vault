@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/payments/supabase";
 import type { DashboardStats } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
