@@ -3,6 +3,7 @@ import { generateSimulatedTxHash } from "@/lib/arc-testnet";
 import { getBotName, isAIBot } from "@/lib/bot-detector";
 import { verifyArcSignature } from "@/lib/gateway";
 import { savePayment } from "@/lib/supabase";
+import { accessVault } from "@/lib/vault";
 
 const AMOUNT_USDC = 0.001;
 
@@ -34,6 +35,26 @@ function successResponse(botName: string, tx_hash: string) {
     paid: AMOUNT_USDC,
     tx_hash,
   });
+}
+
+function paymentRequiredResponse(botName: string) {
+  const headers = new Headers({ "Content-Type": "application/json" });
+  const vaultUuid = process.env.CRAWLPAY_VAULT_UUID;
+
+  if (vaultUuid) {
+    headers.set("x-crawlpay-vault", vaultUuid);
+    headers.set("x-crawlpay-mode", "vault");
+  }
+
+  return NextResponse.json(
+    {
+      error: "payment_required",
+      message: "Pay $0.001 USDC to access this content",
+      bot: botName,
+      price: AMOUNT_USDC,
+    },
+    { status: 402, headers }
+  );
 }
 
 export async function GET(req: NextRequest) {
@@ -79,9 +100,13 @@ export async function GET(req: NextRequest) {
     tx_hash = paymentSignature!.startsWith("0x")
       ? paymentSignature!
       : `0x${paymentSignature!}`;
+  } else if (process.env.CRAWLPAY_VAULT_UUID) {
+    return paymentRequiredResponse(botName);
   } else {
     tx_hash = generateSimulatedTxHash();
   }
+
+  const vaultHeader = getHeader(req, "x-crawlpay-vault", "X-CrawlPay-Vault");
 
   try {
     await savePayment({
@@ -91,6 +116,28 @@ export async function GET(req: NextRequest) {
       amount_usdc: AMOUNT_USDC,
       tx_hash,
     });
+
+    if (vaultHeader) {
+      try {
+        const decrypted = await accessVault(Number(vaultHeader));
+        return NextResponse.json({
+          message: "Access granted",
+          mode: "vault",
+          content: JSON.parse(decrypted) as unknown,
+          tx_hash,
+          bot: botName,
+        });
+      } catch (vaultErr) {
+        console.error(
+          "Vault access failed:",
+          vaultErr instanceof Error ? vaultErr.message : vaultErr
+        );
+        return NextResponse.json(
+          { error: "Vault unavailable", tx_hash },
+          { status: 503 }
+        );
+      }
+    }
 
     return successResponse(botName, tx_hash);
   } catch (err) {

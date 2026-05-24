@@ -12,6 +12,7 @@
     "@base-ui/react": "^1.4.1",
     "@circle-fin/x402-batching": "^3.0.4",
     "@crawlpay/sdk": "github:divergenttt/CrawlPay-SDK",
+    "@piplabs/cdr-sdk": "^0.2.1",
     "@supabase/supabase-js": "^2.105.4",
     "@x402/core": "^2.12.0",
     "@x402/evm": "^2.12.0",
