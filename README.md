@@ -2,147 +2,179 @@
 
 > AI bots read your site for free. Not anymore.
 
-**Live Demo:** [crawl-pay.vercel.app](https://crawl-pay.vercel.app)  
-**Dashboard:** [crawl-pay.vercel.app/dashboard](https://crawl-pay.vercel.app/dashboard)  
-**SDK:** [github.com/divergenttt/CrawlPay-SDK](https://github.com/divergenttt/CrawlPay-SDK)
+**[Live Demo](https://crawl-pay.vercel.app) · [Dashboard](https://crawl-pay.vercel.app/dashboard) · [SDK](https://github.com/divergenttt/CrawlPay-SDK) · MIT License**
 
 ---
 
 ## The Problem
 
-GPTBot, ClaudeBot, PerplexityBot - they crawl your site thousands of times a day. They read your articles, your docs, your content. And they pay you nothing.
+AI Bot crawl your site thousands of times a day. They read your articles, your docs, your content. They train models on it. And they pay you nothing.
 
-Cloudflare noticed this too. They started testing pay-per-crawl for AI bots - but only for Enterprise customers on Cloudflare Pro. Regular developers, bloggers, indie site owners ? No option.
+Cloudflare noticed this too. They started testing pay-per-crawl for AI bots - but only for Enterprise customers. Regular developers, bloggers, indie site owners? No option.
 
 That's what CrawlPay is for.
 
 ---
 
-## The Idea
+## What's New in This Version
 
-I was reading the news about Cloudflare testing bot payments and thought: why is this only for Enterprise ? This should be available to anyone with a useful site. Two minutes to set up, no complex infrastructure, no Cloudflare dependency.
+This repository extends the original CrawlPay with two new layers:
 
-So I built it on Arc - where $0.001 micropayments are actually economical.
+**CDR Vaults** - private encrypted content via Story Protocol. Instead of just gating public pages, bots can now pay to access genuinely private datasets stored in on-chain vaults. The content is cryptographically locked until payment clears.
 
----
-
-## Install in 2 minutes
-
-```bash
-npm install github:divergenttt/CrawlPay-SDK
-```
-
-```typescript
-// middleware.ts
-import { crawlpay } from '@crawlpay/sdk'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-
-const paywall = crawlpay({
-  wallet: "0x_YOUR_WALLET_ADDRESS",
-  price: "0.001",
-  network: "arcTestnet"
-})
-
-export function middleware(request: NextRequest) {
-  return paywall(request) ?? NextResponse.next()
-}
-
-export const config = {
-  matcher: ['/((?!api|_next|favicon).*)']
-}
-```
-
-That's it. If you have a useful resource and AI bots are reading it - now they pay for it.
-
----
-
-## Why Arc
-
-| | Ethereum | Arc |
-|---|---|---|
-| Gas per transaction | ~$0.50 | ~$0.000006 |
-| Settlement time | 12 seconds | < 1 second |
-| Viable for $0.001 payments | ❌ | ✅ |
-
-On Ethereum, gas costs more than the payment itself - micropayments are dead on arrival. Arc makes $0.001 per crawl actually work. That's the whole reason CrawlPay exists.
+**Exa Integration** - a working demo of the full autonomous payment loop. An AI agent uses Exa to search the web, finds CrawlPay-protected URLs, and pays for each one - no API keys, no human involvement, zero accounts.
 
 ---
 
 ## How It Works
 
-1. **Bot visits your site** - GPTBot, ClaudeBot, PerplexityBot, etc.
-2. **Middleware detects the bot** - by User-Agent header
-3. **Returns HTTP 402 Payment Required** - with x402 payment instructions
-4. **Bot pays $0.001 USDC** - via Circle Nanopayments on Arc
-5. **Page is served** - payment recorded in real-time dashboard
+### Standard Mode
+
+```
+Bot → GET /api/page
+    ← 402 + X-Payment-Required
+
+Bot → GET /api/page + payment-signature
+Server → verifySignature → savePayment → Supabase
+    ← 200 + content
+
+Dashboard updates in real-time
+```
+
+### Vault Mode (Story CDR)
+
+```
+Bot → GET /api/page + X-CrawlPay-Vault: {uuid}
+    ← 402 + X-Payment-Required
+
+Bot → GET /api/page + payment-signature
+Server → verifySignature → CDR.accessVault(uuid)
+Story Protocol → threshold decryption → private content
+    ← 200 + decrypted dataset
+```
+
+The difference: standard mode gates public pages. Vault mode delivers content that doesn't exist anywhere in plaintext - it's encrypted at rest and only decrypts after verified payment.
 
 ---
 
-## Supported AI Bots
+## Exa + CrawlPay: Full Autonomous Stack
 
-- GPTBot / ChatGPT-User (OpenAI)
-- ClaudeBot / anthropic-ai (Anthropic)
-- PerplexityBot
-- GoogleOther / Google-Extended
-- CCBot (Common Crawl)
-- Bytespider (TikTok)
-- FacebookBot (Meta)
-- Applebot-Extended (Apple)
+[Exa](https://exa.ai) is a search API built for AI agents. They also support x402 natively - agents pay per search with USDC, no API key needed.
+
+Put them together:
+
+```
+Agent → Exa search ($0.007 USDC, Base network)
+     ← ranked results including CrawlPay-protected URLs
+
+Agent → CrawlPay ($0.001 USDC, Arc network)
+     ← content, no accounts, no keys, no humans
+```
+
+This is what the agentic web looks like. Two independent payment layers, both x402, both USDC, zero human involvement end to end.
+
+Run the demo:
+
+```bash
+npx tsx scripts/exa-crawlpay-agent.ts "AI payment infrastructure x402"
+```
 
 ---
 
-## Live Stats
+## Why Arc
 
-- **2000+ transactions** processed on Arc Testnet
-- **11 unique bot types** detected and charged
-- **Real-time dashboard** updates every 5 seconds
-- **TxHash links** to Arc Testnet Explorer
+|                          | Ethereum  | Arc         |
+|--------------------------|-----------|-------------|
+| Gas per transaction      | ~$0.50    | ~$0.000006  |
+| Settlement time          | 12 seconds| < 1 second  |
+| Viable for $0.001 payments | ❌      | ✅          |
+
+On Ethereum, gas costs more than the payment itself. Arc makes $0.001 per crawl actually work.
 
 ---
 
 ## Tech Stack
 
-- **Next.js 14** - App Router, TypeScript
-- **Arc Testnet** - Circle blockchain, USDC native gas token
-- **Circle Nanopayments** - x402 protocol, gas-free batched settlements
-- **Supabase** - real-time payment history
-- **CrawlPay SDK** - open source middleware
+| Layer | Technology |
+|---|---|
+| Payment protocol | x402 + Circle Nanopayments |
+| Payment network | Arc Testnet (USDC) |
+| Private data | Story Protocol CDR |
+| File storage | IPFS via Pinata |
+| Search layer | Exa (x402 native) |
+| Database | Supabase |
+| Frontend | Next.js 14, TypeScript |
+| Deploy | Vercel |
 
 ---
 
-## Architecture
+## Supported AI Bots
 
-AI Bot Request → CrawlPay Middleware → HTTP 402 + x402 → Bot pays $0.001 USDC → Page served → Dashboard
+· GPTBot 
+· ChatGPT-User 
+· ClaudeBot 
+· anthropic-ai 
+· PerplexityBot 
+· GoogleOther 
+· Google-Extended 
+· CCBot 
+· Bytespider 
+· FacebookBot 
+· Applebot-Extended
+
+---
+
+## Scripts
+
+```bash
+npx tsx scripts/simulate-bots.ts          # simulate 200 bot payments (11 bot types)
+npx tsx scripts/upload-vault.ts           # upload encrypted content to CDR vault
+npx tsx scripts/test-vault-access.ts      # test vault decryption
+npx tsx scripts/exa-crawlpay-agent.ts     # run autonomous Exa + CrawlPay agent
+npx ts-node scripts/deposit.ts balance    # check Circle Gateway balance
+```
+
+---
+
+## Live Stats
+
+- **2418+ transactions** on Arc Testnet
+- **11 unique bot types** detected and charged
+- **Real-time dashboard** - stats refresh every 30s, payments every 5s
+- **Gateway balance** display alongside payment history
 
 ---
 
 ## Roadmap
 
+**Done**
 - [x] Bot detection (11 AI crawlers)
-- [x] HTTP 402 response with x402 headers
-- [x] Circle Nanopayments integration on Arc Testnet
-- [x] Real-time payment dashboard
-- [x] Open source SDK
-- [ ] Arc Mainnet support (Summer 2026)
-- [ ] Platform fee (5-10% per transaction)
-- [ ] WordPress plugin
-- [ ] Cloudflare Worker version (any site, no Node.js required)
+- [x] HTTP 402 + x402 protocol
+- [x] Circle Nanopayments on Arc Testnet
+- [x] Real-time dashboard with aggregate stats
+- [x] CDR vault integration (Story Protocol)
+- [x] Exa autonomous agent demo
+- [x] Paginated payments API
+- [x] Modular architecture (arc/cdr/payments/detection)
+
+**Next**
+- [ ] Arc Mainnet
+- [ ] Express/Fastify/Cloudflare Workers SDK adapters
+- [ ] npm publish as `@crawlpay/sdk`
+- [ ] Exa real API integration (replace simulated search)
+- [ ] Platform fee (5–10% per transaction)
 
 ---
 
-## Status
-
-Running on Arc Testnet. Arc Nanopayments launched on mainnet in May 2026 - mainnet support is next on the roadmap.
-
-Cloudflare is already pushing x402 adoption with OpenAI, Anthropic, and Google. When crawlers support x402 natively, CrawlPay becomes the open alternative for everyone who isn't an Enterprise customer.
-
----
 ## Links
 
 - 🌐 [Live Demo](https://crawl-pay.vercel.app)
 - 📊 [Dashboard](https://crawl-pay.vercel.app/dashboard)
-- 📦 [SDK Repository](https://github.com/divergenttt/CrawlPay-SDK)
+- 📦 [CrawlPay SDK](https://github.com/divergenttt/CrawlPay-SDK)
 - 🔍 [Arc Testnet Explorer](https://testnet.arcscan.app)
+- 📖 [Story CDR Docs](https://docs.story.foundation/developers/cdr-sdk/overview)
+- 🔎 [Exa x402 Guide](https://exa.ai/docs/reference/x402-guide)
 
-*Built with ❤️ on Arc · Powered by Circle Nanopayments*
+---
+
+*Built on Arc · Story Protocol · Exa · Circle Nanopayments*
