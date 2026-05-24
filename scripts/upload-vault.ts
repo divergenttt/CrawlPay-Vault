@@ -5,6 +5,9 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
 // Re-upload after condition changes — vaults are immutable (e.g. uuid 2221 used
 // LicenseReadCondition and cannot be updated; run this to mint a new UUID).
+//
+// Read slot uses EOA bypass (readConditionAddr = STORY_SELLER_ADDRESS).
+// Write slot uses OwnerWriteCondition + encoded owner address.
 
 const payload = {
   type: "premium-dataset",

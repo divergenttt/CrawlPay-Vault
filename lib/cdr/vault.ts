@@ -1,11 +1,13 @@
 import type { StorageProvider } from "@piplabs/cdr-sdk";
-import { encodeAbiParameters, parseAbiParameters } from "viem";
+import { uuidToLabel } from "@piplabs/cdr-sdk";
+import { encryptFile } from "@piplabs/cdr-crypto";
+import { encodeAbiParameters, parseAbiParameters, toHex } from "viem";
 import { getCDRClient } from "./client";
 
 const PINATA_API_URL = "https://api.pinata.cloud";
 const PINATA_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs";
 
-/** OwnerWriteCondition on Aeneid — used for write and read (owner-only). */
+/** OwnerWriteCondition on Aeneid — write slot only. */
 const OWNER_WRITE_CONDITION =
   "0x4C9bFC96d7092b590D497A191826C3dA2277c34B" as const;
 
@@ -30,7 +32,7 @@ class PinataStorageProvider implements StorageProvider {
     this.authHeaders = { Authorization: `Bearer ${getPinataJwt()}` };
   }
 
-  async upload(data: Uint8Array): Promise<string> {
+  async upload(data: Uint8Array, _options?: { pin?: boolean }): Promise<string> {
     const formData = new FormData();
     formData.append(
       "file",
@@ -60,13 +62,35 @@ class PinataStorageProvider implements StorageProvider {
   }
 
   async download(cid: string): Promise<Uint8Array> {
-    const response = await fetch(`${PINATA_GATEWAY_URL}/${cid}`);
-    if (!response.ok) {
-      throw new Error(
-        `Pinata gateway download failed: ${response.status} ${response.statusText}`
+    const gatewayKey = process.env.PINATA_GATEWAY_KEY?.trim();
+    const customGateway = process.env.PINATA_GATEWAY?.trim().replace(/\/$/, "");
+
+    const gatewayUrls: string[] = [];
+    if (customGateway) {
+      const base = `${customGateway}/ipfs/${cid}`;
+      gatewayUrls.push(
+        gatewayKey ? `${base}?pinataGatewayToken=${gatewayKey}` : base
       );
     }
-    return new Uint8Array(await response.arrayBuffer());
+    const defaultBase = `${PINATA_GATEWAY_URL}/${cid}`;
+    gatewayUrls.push(
+      gatewayKey ? `${defaultBase}?pinataGatewayToken=${gatewayKey}` : defaultBase
+    );
+
+    let lastError = "no gateway attempted";
+    for (const url of gatewayUrls) {
+      const response = await fetch(url, { headers: this.authHeaders });
+      if (response.ok) {
+        return new Uint8Array(await response.arrayBuffer());
+      }
+      lastError = `${url} → ${response.status} ${response.statusText}`;
+    }
+
+    throw new Error(
+      `Pinata gateway download failed: ${lastError}. ` +
+        "Set PINATA_GATEWAY to your dedicated gateway host (e.g. xxx.mypinata.cloud from the Pinata dashboard). " +
+        "If the gateway has access controls, also set PINATA_GATEWAY_KEY."
+    );
   }
 }
 
@@ -106,20 +130,43 @@ export async function uploadVault(
     const sellerAddress = getStorySellerAddress();
     const ownerConditionData = getOwnerConditionData(sellerAddress);
 
-    console.log("Vault upload — seller address:", sellerAddress);
-    console.log("Vault upload — ownerConditionData:", ownerConditionData);
+    console.log("Vault upload — seller address (read EOA bypass):", sellerAddress);
+    console.log("Vault upload — writeConditionData:", ownerConditionData);
 
-    const result = await client.uploader.uploadFile({
-      content: new TextEncoder().encode(content),
-      storageProvider,
-      globalPubKey,
+    const contentBytes = new TextEncoder().encode(content);
+    const { ciphertext: encryptedFile, key } = encryptFile(contentBytes);
+    const cid = await storageProvider.upload(encryptedFile, { pin: true });
+
+    const vaultPayload = JSON.stringify({ cid, key: toHex(key) });
+    const payloadBytes = new TextEncoder().encode(vaultPayload);
+
+    // uploadFile() does not forward skipConditionValidation to allocate() in SDK 0.2.1.
+    const { uuid, txHash: allocateTx } = await client.uploader.allocate({
       updatable: false,
       writeConditionAddr: OWNER_WRITE_CONDITION,
-      readConditionAddr: OWNER_WRITE_CONDITION,
+      readConditionAddr: sellerAddress,
       writeConditionData: ownerConditionData,
-      readConditionData: ownerConditionData,
-      accessAuxData: "0x",
+      readConditionData: "0x",
+      skipConditionValidation: true,
     });
+
+    const ciphertext = await client.uploader.encryptDataKey({
+      dataKey: payloadBytes,
+      globalPubKey,
+      label: uuidToLabel(uuid),
+    });
+
+    const { txHash: writeTx } = await client.uploader.write({
+      uuid,
+      accessAuxData: "0x",
+      encryptedData: toHex(ciphertext.raw),
+    });
+
+    const result = {
+      uuid,
+      cid,
+      txHashes: { allocate: allocateTx, write: writeTx },
+    };
 
     console.log(
       "Upload result:",
