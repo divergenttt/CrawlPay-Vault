@@ -34,9 +34,10 @@ class PinataStorageProvider implements StorageProvider {
 
   async upload(data: Uint8Array, _options?: { pin?: boolean }): Promise<string> {
     const formData = new FormData();
+    const fileBytes = new Uint8Array(data);
     formData.append(
       "file",
-      new Blob([data]),
+      new Blob([fileBytes]),
       "crawlpay-vault-content.bin"
     );
 
@@ -67,7 +68,11 @@ class PinataStorageProvider implements StorageProvider {
 
     const gatewayUrls: string[] = [];
     if (customGateway) {
-      const base = `${customGateway}/ipfs/${cid}`;
+      const gatewayBaseUrl = customGateway.startsWith("http") 
+        ? customGateway 
+        : `https://${customGateway}`;
+    
+      const base = `${gatewayBaseUrl}/ipfs/${cid}`;
       gatewayUrls.push(
         gatewayKey ? `${base}?pinataGatewayToken=${gatewayKey}` : base
       );

@@ -1,0 +1,329 @@
+/* ============================ DASHBOARD ============================ */
+.dashboard-page {
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+.db-shell {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 88px 48px 80px;
+}
+
+.db-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 36px;
+}
+.db-header-left { display: flex; flex-direction: column; gap: 8px; }
+.db-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 15px;
+  color: var(--white);
+  letter-spacing: 0.02em;
+}
+.db-brand .logo-hex { width: 18px; height: 18px; }
+.db-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: 0.06em;
+  padding-left: 28px;
+}
+.db-sub .sep { color: var(--gray2); margin: 0 8px; }
+
+.db-header-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.db-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--white);
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.025);
+}
+.db-live-dot {
+  width: 7px; height: 7px;
+  background: var(--c-grn);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--c-grn);
+  animation: heroPulse 1.6s ease-in-out infinite;
+}
+.db-back {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--gray);
+  padding: 8px 14px;
+  border-radius: 100px;
+  transition: color 0.2s, background 0.2s;
+}
+.db-back:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ============================ CARDS GRIDS ============================ */
+.db-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.db-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.db-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px 24px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.db-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.db-card-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 14px;
+}
+.db-card-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 40px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--white);
+}
+.db-card-value .chrom {
+  font-style: italic;
+  background: linear-gradient(90deg, var(--c-red), var(--c-blu));
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.db-card-value .grn {
+  font-style: italic;
+  color: var(--c-grn);
+}
+.db-card-foot {
+  margin-top: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--gray2);
+}
+.db-card-foot .pos { color: var(--c-grn); }
+.db-card-foot .neg { color: var(--c-red); }
+
+/* ============================ CHART ============================ */
+.db-chart {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px 28px 24px;
+  margin-bottom: 36px;
+}
+.db-chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 24px;
+}
+.db-chart-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--white);
+  letter-spacing: -0.01em;
+}
+.db-chart-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: 0.1em;
+}
+.db-chart-svg {
+  width: 100%;
+  height: 240px;
+  display: block;
+}
+.db-bar {
+  fill: url(#bar-grad);
+  rx: 4;
+  transition: opacity 0.2s ease;
+}
+.db-bar:hover { opacity: 0.7; }
+.db-grid-line {
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 1;
+}
+.db-axis-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  fill: var(--gray);
+  letter-spacing: 0.1em;
+}
+.db-bar-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  fill: var(--white);
+  letter-spacing: 0.06em;
+}
+
+/* ============================ TABLE ============================ */
+.db-table-wrap {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.db-table-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border);
+}
+.db-table-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--white);
+  letter-spacing: -0.01em;
+}
+.db-table-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: 0.1em;
+}
+.db-table-scroll {
+  max-height: 620px;
+  overflow-y: auto;
+}
+.db-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.db-table th {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--gray2);
+  text-transform: uppercase;
+  text-align: left;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.015);
+  position: sticky;
+  top: 0;
+  font-weight: 400;
+}
+.db-table td {
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border2);
+  vertical-align: middle;
+}
+.db-table tr:last-child td { border-bottom: none; }
+.db-table tbody tr {
+  transition: background 0.2s ease;
+}
+.db-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+.cell-bot {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.bot-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.cell-page {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--gray);
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cell-amount {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--white);
+  font-feature-settings: 'tnum';
+}
+.cell-amount .chrom {
+  background: linear-gradient(90deg, var(--c-red), var(--c-blu));
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.cell-tx {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--white);
+  transition: color 0.2s;
+}
+.cell-tx:hover { color: var(--c-blu); }
+.cell-tx .arrow { opacity: 0.4; margin-left: 4px; }
+.cell-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--gray);
+}
+
+/* Scrollbar */
+.db-table-scroll::-webkit-scrollbar { width: 6px; }
+.db-table-scroll::-webkit-scrollbar-track { background: transparent; }
+.db-table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+.db-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .db-shell { padding: 64px 28px 64px; }
+  .db-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .db-table th:nth-child(2), .db-table td:nth-child(2) { display: none; }
+}
+@media (max-width: 640px) {
+  .db-grid-4 { grid-template-columns: 1fr; }
+  .db-grid-2 { grid-template-columns: 1fr; }
+  .db-header { flex-direction: column; align-items: flex-start; }
+  .db-card-value { font-size: 30px; }
+  .db-table th:nth-child(4), .db-table td:nth-child(4) { display: none; }
+}

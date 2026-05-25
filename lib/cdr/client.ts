@@ -12,7 +12,7 @@ import { privateKeyToAccount } from "viem/accounts";
 /** Story-API REST endpoint for DKG state (Aeneid testnet). */
 const STORY_API_URL = "http://172.192.41.96:1317";
 
-const STORY_RPC_URL = "https://aeneid.storyrpc.io";
+const STORY_RPC_URL = process.env.STORY_RPC_URL || "https://aeneid.storyrpc.io";
 
 let wasmInit: Promise<void> | null = null;
 let client: CDRClient | null = null;

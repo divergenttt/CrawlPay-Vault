@@ -27,7 +27,7 @@ function getExaApiKey(): string {
 const exa = new Exa(getExaApiKey());
 
 async function exaSearch(query: string): Promise<ExaSearchResult[]> {
-  const result = await exa.searchAndContents(query, {
+  const result = await exa.search(query, {
     type: "auto",
     numResults: 3,
     contents: { highlights: true },
@@ -36,7 +36,7 @@ async function exaSearch(query: string): Promise<ExaSearchResult[]> {
   return result.results.map((r) => ({
     url: r.url,
     title: r.title ?? r.url,
-    description: r.highlights?.[0] ?? r.snippet ?? "",
+    description: (r.highlights[0] ?? "").slice(0, 150),
   }));
 }
 
