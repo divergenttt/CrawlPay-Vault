@@ -54,7 +54,7 @@ export function PageTransition() {
           background: #06060a;
           z-index: 100000;
           pointer-events: none;
-          opacity: 1;
+          opacity: 0;
           transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .page-transition.ready {
@@ -90,7 +90,11 @@ export function PageTransition() {
           pointer-events: none;
         }
       `}</style>
-      <div ref={overlayRef} className="page-transition" aria-hidden="true" />
+      <div
+        ref={overlayRef}
+        className="page-transition ready"
+        aria-hidden="true"
+      />
     </>
   );
 }

@@ -71,10 +71,19 @@ export function useFadeIn(): void {
       { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
     );
 
+    const revealIfInView = (el: Element): boolean => {
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      if (rect.bottom <= 0 || rect.top >= vh) return false;
+      el.setAttribute("data-faded", "in");
+      return true;
+    };
+
     const scan = () => {
       document.querySelectorAll(".fade-up").forEach((el) => {
-        if (!observed.has(el)) {
-          observed.add(el);
+        if (observed.has(el)) return;
+        observed.add(el);
+        if (!revealIfInView(el)) {
           io.observe(el);
         }
       });

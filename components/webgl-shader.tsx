@@ -21,11 +21,6 @@ export default function WebGLShader({
 
     const parent = canvas.parentElement;
 
-    const vertexShader = `
-      attribute vec3 position;
-      void main() { gl_Position = vec4(position, 1.0); }
-    `;
-
     const fragmentShader = `
       precision highp float;
       uniform vec2  resolution;
@@ -58,7 +53,7 @@ export default function WebGLShader({
       alpha: true,
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(new THREE.Color(0x0e0e18), 1);
+    renderer.setClearColor(0x000000, 0);
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, -1);
 
     const uniforms = {
@@ -79,8 +74,12 @@ export default function WebGLShader({
       new THREE.BufferAttribute(verts, 3)
     );
 
-    const material = new THREE.RawShaderMaterial({
-      vertexShader,
+    const material = new THREE.ShaderMaterial({
+      vertexShader: `
+        void main() {
+          gl_Position = vec4(position, 1.0);
+        }
+      `,
       fragmentShader,
       uniforms,
       side: THREE.DoubleSide,

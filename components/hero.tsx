@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-
 const WebGLShader = dynamic(() => import("@/components/webgl-shader"), {
   ssr: false,
 });
@@ -10,16 +9,21 @@ const WebGLShader = dynamic(() => import("@/components/webgl-shader"), {
 export function Hero() {
   return (
     <section className="hero" data-screen-label="Hero">
-      <WebGLShader className="hero-shader" />
-      <div className="hero-frame fade-up">
+      <div className="hero-shader-layer" aria-hidden="true">
+        <WebGLShader className="hero-shader" />
+      </div>
+      <div className="hero-frame fade-up" data-faded="in">
         <div className="hero-card">
           <div className="overline">
             <span className="dot" />
             <span>X402 PROTOCOL</span>
           </div>
           <h1 className="hero-title">
-            AI bots crawl your site. Now they{" "}
-            <span className="accent">pay for it.</span>
+            <span className="hero-title-line">AI bots crawl</span>
+            <span className="hero-title-line">your site. Now</span>
+            <span className="hero-title-line">
+              they <span className="accent">pay for it.</span>
+            </span>
           </h1>
           <p className="hero-body">Set it once. Bots pay forever.</p>
           <div className="hero-buttons">

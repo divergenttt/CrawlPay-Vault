@@ -216,7 +216,7 @@ export function Orbit() {
                       x="0"
                       y={p.size + 14}
                       textAnchor="middle"
-                      fontFamily="var(--font-dm-mono), 'DM Mono', ui-monospace, monospace"
+                      fontFamily="'DM Mono', ui-monospace, monospace"
                       fontSize="9"
                       fill="#cfcfd6"
                       style={{ letterSpacing: "0.1em" }}
@@ -244,7 +244,7 @@ export function Orbit() {
             x="0"
             y="6"
             textAnchor="middle"
-            fontFamily="var(--font-dm-mono), 'DM Mono', ui-monospace, monospace"
+            fontFamily="'DM Mono', ui-monospace, monospace"
             fontSize="17"
             fontWeight="500"
             fill="#ffffff"
