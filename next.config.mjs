@@ -3,15 +3,16 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** Packages that must run in Node, not inside the webpack server bundle. */
+/** Node-only packages — never webpack-bundle (CDR / IPFS stack). */
 const nodeOnlyPackages = [
   "@piplabs/cdr-sdk",
   "@piplabs/cdr-crypto",
   "@piplabs/cdr-contracts",
   "multiformats",
+  "helia",
+  "@helia/unixfs",
 ];
 
-/** Absolute paths so webpack resolves ESM export maps (Vercel-safe). */
 const multiformatsAliases = {
   "multiformats/cid": path.resolve(
     __dirname,
@@ -40,6 +41,8 @@ const nextConfig = {
         "@piplabs/cdr-crypto",
         "@piplabs/cdr-contracts",
         "multiformats",
+        "helia",
+        "@helia/unixfs",
         ({ request }, callback) => {
           if (typeof request !== "string") {
             callback();
@@ -48,7 +51,10 @@ const nextConfig = {
           if (
             request === "multiformats" ||
             request.startsWith("multiformats/") ||
-            request.startsWith("@piplabs/")
+            request.startsWith("@piplabs/") ||
+            request === "helia" ||
+            request.startsWith("helia/") ||
+            request.startsWith("@helia/")
           ) {
             return callback(null, `commonjs ${request}`);
           }

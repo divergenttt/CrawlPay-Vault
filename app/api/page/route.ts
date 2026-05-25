@@ -2,7 +2,6 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { generateSimulatedTxHash } from "@/lib/arc";
-import { accessVault } from "@/lib/cdr/vault";
 import { getBotName, isAIBot } from "@/lib/detection/bot-detector";
 import { verifyArcSignature } from "@/lib/payments/gateway";
 import { savePayment } from "@/lib/payments/supabase";
@@ -37,6 +36,28 @@ function successResponse(botName: string, tx_hash: string) {
     paid: AMOUNT_USDC,
     tx_hash,
   });
+}
+
+async function fetchVaultContent(
+  uuid: number,
+  req: NextRequest
+): Promise<{ content: unknown } | null> {
+  const vaultUrl = new URL("/api/vault", req.url);
+  const res = await fetch(vaultUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ uuid }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text();
+    console.error("Vault API fetch failed:", res.status, errBody);
+    return null;
+  }
+
+  const data = (await res.json()) as { content?: unknown };
+  return data.content !== undefined ? { content: data.content } : null;
 }
 
 function paymentRequiredResponse(botName: string) {
@@ -120,25 +141,20 @@ export async function GET(req: NextRequest) {
     });
 
     if (vaultHeader) {
-      try {
-        const decrypted = await accessVault(Number(vaultHeader));
-        return NextResponse.json({
-          message: "Access granted",
-          mode: "vault",
-          content: JSON.parse(decrypted) as unknown,
-          tx_hash,
-          bot: botName,
-        });
-      } catch (vaultErr) {
-        console.error(
-          "Vault access failed:",
-          vaultErr instanceof Error ? vaultErr.message : vaultErr
-        );
+      const vault = await fetchVaultContent(Number(vaultHeader), req);
+      if (!vault) {
         return NextResponse.json(
           { error: "Vault unavailable", tx_hash },
           { status: 503 }
         );
       }
+      return NextResponse.json({
+        message: "Access granted",
+        mode: "vault",
+        content: vault.content,
+        tx_hash,
+        bot: botName,
+      });
     }
 
     return successResponse(botName, tx_hash);
