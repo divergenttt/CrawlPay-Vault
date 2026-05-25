@@ -1,6 +1,3 @@
-import type { StorageProvider } from "@piplabs/cdr-sdk";
-import { uuidToLabel } from "@piplabs/cdr-sdk";
-import { encryptFile } from "@piplabs/cdr-crypto";
 import { encodeAbiParameters, parseAbiParameters, toHex } from "viem";
 import { getCDRClient } from "./client";
 
@@ -10,6 +7,20 @@ const PINATA_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs";
 /** OwnerWriteCondition on Aeneid — write slot only. */
 const OWNER_WRITE_CONDITION =
   "0x4C9bFC96d7092b590D497A191826C3dA2277c34B" as const;
+
+/** Minimal storage interface — avoids static import from @piplabs/cdr-sdk. */
+interface VaultStorageProvider {
+  upload(data: Uint8Array, options?: { pin?: boolean }): Promise<string>;
+  download(cid: string): Promise<Uint8Array>;
+}
+
+function loadCdrSdk() {
+  return import(/* webpackIgnore: true */ "@piplabs/cdr-sdk");
+}
+
+function loadCdrCrypto() {
+  return import(/* webpackIgnore: true */ "@piplabs/cdr-crypto");
+}
 
 function getPinataJwt(): string {
   const jwt = process.env.PINATA_JWT;
@@ -21,11 +32,7 @@ function getPinataJwt(): string {
   return jwt;
 }
 
-/**
- * Pinata-backed IPFS storage (Pinata does not expose Kubo /api/v0/add).
- * Uses api.pinata.cloud for uploads and gateway.pinata.cloud for reads.
- */
-class PinataStorageProvider implements StorageProvider {
+class PinataStorageProvider implements VaultStorageProvider {
   private readonly authHeaders: HeadersInit;
 
   constructor() {
@@ -68,10 +75,10 @@ class PinataStorageProvider implements StorageProvider {
 
     const gatewayUrls: string[] = [];
     if (customGateway) {
-      const gatewayBaseUrl = customGateway.startsWith("http") 
-        ? customGateway 
+      const gatewayBaseUrl = customGateway.startsWith("http")
+        ? customGateway
         : `https://${customGateway}`;
-    
+
       const base = `${gatewayBaseUrl}/ipfs/${cid}`;
       gatewayUrls.push(
         gatewayKey ? `${base}?pinataGatewayToken=${gatewayKey}` : base
@@ -129,6 +136,10 @@ export async function uploadVault(
   content: string
 ): Promise<{ uuid: number; cid: string }> {
   try {
+    const [{ uuidToLabel }, { encryptFile }] = await Promise.all([
+      loadCdrSdk(),
+      loadCdrCrypto(),
+    ]);
     const client = await getCDRClient();
     const storageProvider = createStorageProvider();
     const globalPubKey = await client.observer.getGlobalPubKey();
@@ -145,7 +156,6 @@ export async function uploadVault(
     const vaultPayload = JSON.stringify({ cid, key: toHex(key) });
     const payloadBytes = new TextEncoder().encode(vaultPayload);
 
-    // uploadFile() does not forward skipConditionValidation to allocate() in SDK 0.2.1.
     const { uuid, txHash: allocateTx } = await client.uploader.allocate({
       updatable: false,
       writeConditionAddr: OWNER_WRITE_CONDITION,

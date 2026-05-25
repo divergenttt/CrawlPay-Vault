@@ -1,4 +1,3 @@
-import { CDRClient, initWasm } from "@piplabs/cdr-sdk";
 import {
   createPublicClient,
   createWalletClient,
@@ -14,12 +13,20 @@ const STORY_API_URL = "http://172.192.41.96:1317";
 
 const STORY_RPC_URL = process.env.STORY_RPC_URL || "https://aeneid.storyrpc.io";
 
+type CDRSdkModule = typeof import("@piplabs/cdr-sdk");
+type CDRClientInstance = InstanceType<CDRSdkModule["CDRClient"]>;
+
 let wasmInit: Promise<void> | null = null;
-let client: CDRClient | null = null;
+let client: CDRClientInstance | null = null;
+
+/** Runtime-only load — webpack must not bundle this package (Vercel). */
+function loadCdrSdk(): Promise<CDRSdkModule> {
+  return import(/* webpackIgnore: true */ "@piplabs/cdr-sdk");
+}
 
 function ensureWasmInitialized(): Promise<void> {
   if (!wasmInit) {
-    wasmInit = initWasm();
+    wasmInit = loadCdrSdk().then(({ initWasm }) => initWasm());
   }
   return wasmInit;
 }
@@ -55,10 +62,11 @@ function createStoryClients(): {
   return { publicClient, walletClient };
 }
 
-export async function getCDRClient(): Promise<CDRClient> {
+export async function getCDRClient(): Promise<CDRClientInstance> {
   await ensureWasmInitialized();
 
   if (!client) {
+    const { CDRClient } = await loadCdrSdk();
     const { publicClient, walletClient } = createStoryClients();
 
     client = new CDRClient({
