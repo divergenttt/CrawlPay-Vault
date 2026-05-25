@@ -250,7 +250,7 @@ button { cursor: none; font-family: inherit; }
   position: relative;
   overflow: visible;
 }
-.overline {
+.hero-overline {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.24em;
@@ -261,7 +261,7 @@ button { cursor: none; font-family: inherit; }
   gap: 10px;
   opacity: 0.75;
 }
-.overline .dot {
+.hero-overline .dot {
   width: 6px; height: 6px;
   background: var(--c-grn);
   border-radius: 50%;

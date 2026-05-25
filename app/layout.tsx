@@ -4,6 +4,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CrawlPay",
   description: "Monetize your site for the AI era — charge bots $0.001 USDC per page",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

@@ -14,7 +14,7 @@ export function Hero() {
       </div>
       <div className="hero-frame fade-up" data-faded="in">
         <div className="hero-card">
-          <div className="overline">
+          <div className="hero-overline">
             <span className="dot" />
             <span>X402 PROTOCOL</span>
           </div>
