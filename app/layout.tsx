@@ -1,9 +1,30 @@
 import type { Metadata } from "next";
+import { Playfair_Display, DM_Mono, DM_Sans } from "next/font/google";
 import "./globals.css";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
+});
+
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  variable: "--font-dm-mono",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-dm-sans",
+});
 
 export const metadata: Metadata = {
   title: "CrawlPay",
-  description: "Monetize your site for the AI era — charge bots $0.001 USDC per page",
+  description:
+    "Monetize your site for the AI era — charge bots $0.001 USDC per page",
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",
@@ -12,23 +33,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html
+      lang="en"
+      className={`${playfair.variable} ${dmMono.variable} ${dmSans.variable}`}
+    >
       <body className="antialiased">{children}</body>
     </html>
   );
