@@ -7,6 +7,7 @@ import { DashboardPaymentsTable } from "@/components/dashboard/dashboard-payment
 import { LogoMark } from "@/components/logo-mark";
 import { PageTransition } from "@/components/page-transition";
 import { useClock, useCursor } from "@/lib/hooks";
+import { createClient } from "@/lib/payments/supabase";
 import type {
   ChartDay,
   DashboardStats,
@@ -73,6 +74,26 @@ function buildChartData(payments: Payment[]): ChartDay[] {
     label: day.label,
     revenue: revenueByDay.get(keys[i]) ?? 0,
   }));
+}
+
+function applyNewPaymentStats(
+  prev: DashboardStats,
+  payment: Payment,
+  existingBotNames: Set<string>
+): DashboardStats {
+  const amount = toNumber(payment.amount_usdc);
+  const created = new Date(payment.created_at);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const isToday = created >= todayStart;
+  const isNewBot = !existingBotNames.has(payment.bot_name);
+
+  return {
+    total_earned: prev.total_earned + amount,
+    total_requests: prev.total_requests + 1,
+    unique_bots: isNewBot ? prev.unique_bots + 1 : prev.unique_bots,
+    today_earned: prev.today_earned + (isToday ? amount : 0),
+  };
 }
 
 function fmtTime(d: Date): string {
@@ -150,10 +171,7 @@ export default function DashboardPage() {
 
   async function fetchStats() {
     try {
-      const res = await fetch(`/api/stats?t=${Date.now()}`, {
-        cache: "no-store",
-        headers: { "Cache-Control": "no-cache" },
-      });
+      const res = await fetch("/api/stats", { next: { revalidate: 10 } });
       if (!res.ok) {
         console.error("Stats fetch error:", res.status, res.statusText);
         return;
@@ -188,8 +206,35 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000);
+    const interval = setInterval(fetchData, 15000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel("payments")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "payments" },
+        (payload) => {
+          const payment = payload.new as Payment;
+          setPayments((prev) => {
+            if (prev.some((p) => p.id === payment.id)) return prev;
+            const existingBotNames = new Set(prev.map((p) => p.bot_name));
+            setStats((s) =>
+              applyNewPaymentStats(s, payment, existingBotNames)
+            );
+            setLastUpdated(new Date());
+            return [payment, ...prev].slice(0, 100);
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
