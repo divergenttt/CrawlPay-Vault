@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DashboardChart } from "@/components/dashboard/dashboard-chart";
 import { DashboardPaymentsTable } from "@/components/dashboard/dashboard-payments-table";
 import { LogoMark } from "@/components/logo-mark";
@@ -249,7 +249,7 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const chartData = buildChartData(payments);
+  const chartData = useMemo(() => buildChartData(payments), [payments]);
   const balanceError = Boolean(balance?.error);
   const totalEarned = formatUsdc(stats.total_earned);
   const todayEarned = formatUsdc(stats.today_earned);
