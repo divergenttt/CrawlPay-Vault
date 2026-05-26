@@ -4,6 +4,8 @@ import { getCDRClient } from "./client";
 
 const PINATA_API_URL = "https://api.pinata.cloud";
 const PINATA_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs";
+const STORY_TIME_CONDITION_ADDRESS =
+  "0x0000000000000000000000000000000000000000" as const;
 
 /** OwnerWriteCondition on Aeneid — write slot only. */
 const OWNER_WRITE_CONDITION =
@@ -126,6 +128,10 @@ function getOwnerConditionData(sellerAddress: `0x${string}`): `0x${string}` {
   return encodeAbiParameters(parseAbiParameters("address"), [sellerAddress]);
 }
 
+function getTimeConditionData(timestamp: bigint): `0x${string}` {
+  return encodeAbiParameters(parseAbiParameters("uint256"), [timestamp]);
+}
+
 function formatCause(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (error && typeof error === "object" && "message" in error) {
@@ -135,7 +141,8 @@ function formatCause(error: unknown): string {
 }
 
 export async function uploadVault(
-  content: string
+  content: string,
+  validUntil?: number | bigint
 ): Promise<{ uuid: number; cid: string }> {
   try {
     const [{ uuidToLabel }, { encryptFile }] = await Promise.all([
@@ -146,7 +153,21 @@ export async function uploadVault(
     const storageProvider = createStorageProvider();
     const globalPubKey = await client.observer.getGlobalPubKey();
     const sellerAddress = getStorySellerAddress();
+    if (
+      validUntil != null &&
+      STORY_TIME_CONDITION_ADDRESS ===
+        "0x0000000000000000000000000000000000000000"
+    ) {
+      throw new Error(
+        "Time-based conditions are temporarily disabled until Story Protocol deploys the TimeReadCondition contract on Aeneid."
+      );
+    }
     const ownerConditionData = getOwnerConditionData(sellerAddress);
+    const timeConditionData =
+      validUntil != null ? getTimeConditionData(BigInt(validUntil)) : "0x";
+    const readConditionAddr =
+      validUntil != null ? STORY_TIME_CONDITION_ADDRESS : sellerAddress;
+    const readConditionData = validUntil != null ? timeConditionData : "0x";
 
     console.log("Vault upload — seller address (read EOA bypass):", sellerAddress);
     console.log("Vault upload — writeConditionData:", ownerConditionData);
@@ -161,9 +182,9 @@ export async function uploadVault(
     const { uuid, txHash: allocateTx } = await client.uploader.allocate({
       updatable: false,
       writeConditionAddr: OWNER_WRITE_CONDITION,
-      readConditionAddr: sellerAddress,
+      readConditionAddr,
       writeConditionData: ownerConditionData,
-      readConditionData: "0x",
+      readConditionData,
       skipConditionValidation: true,
     });
 
