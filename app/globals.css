@@ -320,6 +320,41 @@ h1.hero-title .accent {
   display: flex; gap: 12px;
   margin-top: 8px;
 }
+.hero-marquee-slot {
+  width: 100%;
+  margin-top: 57px;
+}
+
+/* ============================ HERO MARQUEE ============================ */
+.marquee-wrapper {
+  overflow: hidden;
+  background: transparent;
+  padding: 12px 0 8px;
+  white-space: nowrap;
+}
+.marquee-track {
+  display: inline-flex;
+  animation: ticker 70s linear infinite;
+  will-change: transform;
+  transform: translateY(2px);
+}
+.marquee-dot {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray);
+  padding: 0 24px;
+}
+.marquee-dot::after {
+  content: "·";
+  margin-left: 24px;
+  opacity: 0.4;
+}
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 
 /* ============================ STATS ============================ */
 .stats {
