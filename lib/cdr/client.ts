@@ -8,8 +8,9 @@ import {
 import { storyAeneid } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 
-/** Story-API REST endpoint for DKG state (Aeneid testnet). */
-const STORY_API_URL = "http://172.192.41.96:1317";
+/** Story-API REST base URL for CDR DKG state (not the Protocol API at api.storyapis.com). */
+const STORY_API_URL =
+  process.env.STORY_API_URL ?? "https://api.story.foundation";
 
 const STORY_RPC_URL = process.env.STORY_RPC_URL || "https://aeneid.storyrpc.io";
 

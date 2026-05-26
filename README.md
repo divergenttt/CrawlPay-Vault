@@ -124,6 +124,20 @@ On Ethereum, gas costs more than the payment itself. Arc makes $0.001 per crawl 
 
 ---
 
+## Environment Variables
+
+Copy `.env.local` from your secrets store. Key variables:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `STORY_PRIVATE_KEY` | For CDR vaults | Story Aeneid wallet private key |
+| `STORY_RPC_URL` | No | Story EVM RPC (default: `https://aeneid.storyrpc.io`) |
+| `STORY_API_URL` | No | Story-API REST endpoint for CDR DKG state ([CDR runtime config](https://docs.story.foundation/developers/cdr-sdk/advanced-configuration); default: `https://api.story.foundation`). On Aeneid, if the default is unreachable, set to the shared testnet Story-API URL from the docs. |
+| `PINATA_JWT` | For vault uploads | Pinata API token for IPFS |
+| `CRAWLPAY_VAULT_UUID` | For vault demo | Vault UUID to serve via `/api/page` |
+
+---
+
 ## Scripts
 
 ```bash
