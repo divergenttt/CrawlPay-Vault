@@ -92,7 +92,8 @@ class PinataStorageProvider implements VaultStorageProvider {
 
     let lastError = "no gateway attempted";
     for (const url of gatewayUrls) {
-      const response = await fetch(url, { headers: this.authHeaders });
+      const headers = url.includes("pinata.cloud") ? this.authHeaders : {};
+      const response = await fetch(url, { headers });
       if (response.ok) {
         return new Uint8Array(await response.arrayBuffer());
       }
