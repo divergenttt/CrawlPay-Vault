@@ -2,7 +2,7 @@
 
 > AI bots read your site for free. Not anymore.
 
-**[Live Demo](https://crawl-pay.vercel.app) · [Dashboard](https://crawl-pay.vercel.app/dashboard) · [SDK](https://github.com/divergenttt/CrawlPay-SDK) · MIT License**
+**[Live Demo](crawl-pay.com) · [Dashboard]([https://crawl-pay.vercel.app/dashboard]) · [SDK](https://github.com/divergenttt/CrawlPay-SDK) · MIT License**
 
 ---
 
