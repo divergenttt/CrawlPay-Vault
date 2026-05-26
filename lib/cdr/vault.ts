@@ -1,3 +1,4 @@
+import "server-only";
 import { encodeAbiParameters, parseAbiParameters, toHex } from "viem";
 import { getCDRClient } from "./client";
 
