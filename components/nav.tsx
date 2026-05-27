@@ -68,6 +68,25 @@ export function Nav() {
               {l.label}
             </a>
           ))}
+          <div className="nav-connect">
+            <button type="button" className="nav-connect-trigger">
+              Connect <span className="nav-connect-caret">▾</span>
+            </button>
+            <div className="nav-connect-menu">
+              <Link href="/ai-agents" className="nav-connect-item" data-page-link>
+                <span className="nav-connect-dot ai" />
+                AI Agents
+              </Link>
+              <Link href="/api-keys" className="nav-connect-item" data-page-link>
+                <span className="nav-connect-dot api" />
+                API Keys
+              </Link>
+              <Link href="/web-sdk" className="nav-connect-item" data-page-link>
+                <span className="nav-connect-dot web" />
+                Web SDK
+              </Link>
+            </div>
+          </div>
           <a
             href="https://github.com/divergenttt/CrawlPay-"
             target="_blank"

@@ -1,0 +1,23 @@
+{
+  "name": "@crawlpay/eliza-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CrawlPay payment-required handler plugin for elizaOS agents",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@elizaos/core": "^0.1.0",
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

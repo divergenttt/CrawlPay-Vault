@@ -130,6 +130,126 @@ button { cursor: none; font-family: inherit; }
   color: #fff;
   background: rgba(255, 255, 255, 0.06);
 }
+.nav-connect {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-bottom: 10px;
+  margin-bottom: -10px;
+}
+.nav-connect-trigger {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(245, 245, 247, 0.65);
+  padding: 9px 18px;
+  border-radius: 100px;
+  border: none;
+  background: transparent;
+  transition: color 0.2s ease, background 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-connect-caret {
+  font-size: 10px;
+  opacity: 0.75;
+  transform: translateY(-1px);
+}
+.nav-connect:hover .nav-connect-trigger,
+.nav-connect:focus-within .nav-connect-trigger {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+.nav-connect-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  opacity: 0;
+  pointer-events: none;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(24, 24, 30, 0.82), rgba(8, 8, 12, 0.9));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 12px 40px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 120;
+}
+.nav-connect:hover .nav-connect-menu,
+.nav-connect:focus-within .nav-connect-menu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.nav-connect-menu a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(245, 245, 247, 0.82);
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+.nav-connect-menu a:hover {
+  color: #fff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+.nav-connect-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.nav-connect-dot.ai {
+  background: #4af0a8;
+  box-shadow: 0 0 8px rgba(74, 240, 168, 0.8);
+}
+.nav-connect-dot.api {
+  background: #5e8eff;
+  box-shadow: 0 0 8px rgba(94, 142, 255, 0.8);
+}
+.nav-connect-dot.web {
+  background: #ff4d63;
+  box-shadow: 0 0 8px rgba(255, 77, 99, 0.8);
+}
+.nav-connect-menu a:hover .nav-connect-dot {
+  transform: scale(1.12);
+  filter: brightness(1.2);
+}
+.nav-connect-menu a:hover .nav-connect-dot.ai {
+  box-shadow: 0 0 12px rgba(74, 240, 168, 1);
+}
+.nav-connect-menu a:hover .nav-connect-dot.api {
+  box-shadow: 0 0 12px rgba(94, 142, 255, 1);
+}
+.nav-connect-menu a:hover .nav-connect-dot.web {
+  box-shadow: 0 0 12px rgba(255, 77, 99, 1);
+}
 .nav-links a.active {
   color: #fff;
   background: rgba(255, 255, 255, 0.08);
