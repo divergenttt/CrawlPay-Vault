@@ -138,22 +138,20 @@ export default function ConnectWebSdkPage() {
       <main className="db-shell">
         <ConnectHeader />
 
-        <section className="cn-hero">
+        <section className="cn-hero cn-hero-stacked">
           <div>
             <div className="cn-eyebrow">
               <span className="pip" style={{ background: "var(--c-red)", boxShadow: "0 0 8px var(--c-red)" }} />
               0.001 USDC per hit · Base mainnet
             </div>
-            <h1 className="cn-title">
-              Stop free scraping.
-              <br />
-              <em>Start earning from AI traffic.</em>
+            <h1 className="cn-title cn-title-nowrap">
+              Stop free scraping. <em>Start earning from AI traffic.</em>
             </h1>
+            <p className="cn-lede">
+              Protect your content from free model scraping and charge AI traffic. Humans pass through untouched; bots receive
+              a standards-based 402 payment flow.
+            </p>
           </div>
-          <p className="cn-lede">
-            Protect your content from free model scraping and charge AI traffic. Humans pass through untouched; bots receive
-            a standards-based 402 payment flow.
-          </p>
         </section>
 
         <section className="cn-section">

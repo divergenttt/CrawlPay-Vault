@@ -169,20 +169,20 @@ export default function ConnectAiAgentsPage() {
       <main className="db-shell">
         <ConnectHeader />
 
-        <section className="cn-hero">
+        <section className="cn-hero cn-hero-stacked">
           <div>
             <div className="cn-eyebrow">
               <span className="pip" style={{ background: "var(--c-grn)", boxShadow: "0 0 8px var(--c-grn)" }} />
               Live on Base · MCP 0.4
             </div>
-            <h1 className="cn-title">
+            <h1 className="cn-title cn-title-nowrap">
               Teach your agents to <em>pay for what they read.</em>
             </h1>
+            <p className="cn-lede">
+              Plug CrawlPay into autonomous agents so they can settle paywalled content on their own over the Model
+              Context Protocol on Base.
+            </p>
           </div>
-          <p className="cn-lede">
-            Plug CrawlPay into autonomous agents so they can settle paywalled content on their own over the Model
-            Context Protocol on Base.
-          </p>
         </section>
 
         <section className="cn-section">

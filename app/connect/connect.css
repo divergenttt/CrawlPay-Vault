@@ -4,6 +4,37 @@
 ========================================================================= */
 
 body.connect-page { background: var(--bg); }
+body.connect-page::before,
+body.connect-page::after {
+  content: "";
+  position: fixed;
+  inset: -12%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.18;
+  will-change: transform;
+}
+body.connect-page::before {
+  background:
+    radial-gradient(42% 32% at 22% 28%, rgba(94, 142, 255, 0.17), transparent 72%),
+    radial-gradient(36% 30% at 82% 72%, rgba(255, 77, 99, 0.13), transparent 74%);
+  animation: cn-bg-drift-a 22s ease-in-out infinite alternate;
+}
+body.connect-page::after {
+  background:
+    radial-gradient(34% 28% at 68% 20%, rgba(74, 240, 168, 0.12), transparent 75%);
+  animation: cn-bg-drift-b 28s ease-in-out infinite alternate;
+}
+body.connect-page .db-shell { position: relative; z-index: 1; }
+
+@keyframes cn-bg-drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(-2.5%, 2%, 0) scale(1.04); }
+}
+@keyframes cn-bg-drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(2.5%, -2%, 0) scale(1.05); }
+}
 
 /* Keep header anchored in the same place across connect screens */
 body.connect-page .db-shell {
@@ -58,14 +89,14 @@ body.connect-page .kx-cta,
 body.connect-page .kx-table,
 body.connect-page .kx-warn {
   opacity: 0;
-  animation: cn-fade-up 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: cn-fade-up 340ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 body.connect-page .cn-hero,
-body.connect-page .kx-cta { animation-delay: 70ms; }
+body.connect-page .kx-cta { animation-delay: 20ms; }
 body.connect-page .cn-section,
-body.connect-page .kx-table { animation-delay: 140ms; }
+body.connect-page .kx-table { animation-delay: 70ms; }
 body.connect-page .cn-foot,
-body.connect-page .kx-warn { animation-delay: 210ms; }
+body.connect-page .kx-warn { animation-delay: 120ms; }
 
 .cn-hero {
   display: grid;
@@ -75,6 +106,16 @@ body.connect-page .kx-warn { animation-delay: 210ms; }
   padding: 8px 0 40px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 40px;
+}
+.cn-hero.cn-hero-stacked {
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+.cn-hero.cn-hero-stacked .cn-title {
+  margin-bottom: 80px;
+}
+.cn-hero.cn-hero-stacked .cn-lede {
+  margin-top: 0;
 }
 .cn-eyebrow {
   display: inline-flex;
@@ -106,6 +147,9 @@ body.connect-page .kx-warn { animation-delay: 210ms; }
   -webkit-background-clip: text;
           background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+.cn-title.cn-title-nowrap {
+  white-space: nowrap;
 }
 .cn-lede {
   font-family: 'DM Sans', sans-serif;
@@ -453,12 +497,15 @@ body.connect-page .kx-warn { animation-delay: 210ms; }
   }
   .cn-hero { grid-template-columns: 1fr; gap: 50px; padding-top: 0; }
   .cn-title { font-size: 48px; }
+  .cn-title.cn-title-nowrap { white-space: normal; }
   .cn-grid-3 { grid-template-columns: 1fr 1fr; }
   .cn-sdk-hero { grid-template-columns: 1fr; }
   .cn-key { grid-template-columns: 1fr 1fr auto; }
   .cn-key-token { grid-column: 1 / -1; }
 }
 @media (max-width: 720px) {
+  body.connect-page::before,
+  body.connect-page::after { opacity: 0.1; }
   body.connect-page .db-shell { padding-top: 112px; }
   body.connect-page .db-header.cn-fixed-header {
     top: 10px;

@@ -28,7 +28,14 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: nodeOnlyPackages,
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    // Workaround for intermittent .next cache corruption on Windows dev sessions
+    // causing missing chunk/module errors like "./948.js".
+    if (dev) {
+      // Faster than disabled cache, but avoids flaky filesystem cache writes on Windows.
+      config.cache = { type: "memory" };
+    }
+
     config.resolve.alias = {
       ...config.resolve.alias,
       ...multiformatsAliases,

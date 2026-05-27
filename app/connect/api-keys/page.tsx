@@ -211,20 +211,20 @@ export default function ConnectApiKeysPage() {
       <main className="db-shell">
         <ConnectHeader />
 
-        <section className="cn-hero">
+        <section className="cn-hero cn-hero-stacked">
           <div>
             <div className="cn-eyebrow">
               <span className="pip" style={{ background: "var(--c-blu)", boxShadow: "0 0 8px var(--c-blu)" }} />
               {rows.filter((r) => r.status === "active").length} active keys · Base mainnet
             </div>
-            <h1 className="cn-title">
+            <h1 className="cn-title cn-title-nowrap">
               A secret PIN <em>for your agents.</em>
             </h1>
+            <p className="cn-lede">
+              Create secure tokens for your AI agents. You control per-request and daily spending limits before any wallet
+              signature happens.
+            </p>
           </div>
-          <p className="cn-lede">
-            Create secure tokens for your AI agents. You control per-request and daily spending limits before any wallet
-            signature happens.
-          </p>
         </section>
 
         <section className="kx-cta">
