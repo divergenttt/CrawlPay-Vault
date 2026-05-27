@@ -1,0 +1,583 @@
+/* ============================ API KEYS PAGE ============================
+   Builds on connect.css. Adds the generate-key CTA, keys table, warning.
+========================================================================= */
+
+/* Big generate CTA */
+.kx-cta {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 28px;
+  align-items: center;
+  padding: 26px 28px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background:
+    radial-gradient(120% 200% at 100% 0%, rgba(94, 142, 255, 0.10), transparent 60%),
+    radial-gradient(120% 200% at 0% 100%, rgba(255, 77, 99, 0.08),  transparent 60%),
+    rgba(255, 255, 255, 0.02);
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.kx-cta-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.kx-cta-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(245, 245, 247, 0.62);
+  max-width: 560px;
+}
+.kx-generate {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #06060a;
+  background: #fff;
+  border: none;
+  padding: 14px 22px;
+  border-radius: 100px;
+  cursor: none;
+  position: relative;
+  transition: background 0.2s, transform 0.18s, box-shadow 0.28s;
+  box-shadow:
+    -2px 0 18px rgba(255, 77, 99, 0.30),
+     2px 0 18px rgba(94, 142, 255, 0.30);
+}
+.kx-generate:hover {
+  transform: translateY(-1px);
+  background: #f1f1f3;
+  box-shadow:
+    -3px 0 28px rgba(255, 77, 99, 0.45),
+     3px 0 28px rgba(94, 142, 255, 0.45);
+}
+.kx-generate .plus {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #06060a;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Table */
+.kx-table {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.015);
+}
+.kx-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1.4fr 0.8fr 0.7fr 0.4fr;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 22px;
+  border-top: 1px solid var(--border);
+  transition: background 0.18s ease, box-shadow 0.4s ease;
+}
+.kx-row:first-child { border-top: none; }
+.kx-row.head {
+  background: rgba(255, 255, 255, 0.02);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray);
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+.kx-row.body:hover { background: rgba(255, 255, 255, 0.02); }
+.kx-row.body.fresh {
+  background:
+    linear-gradient(90deg, rgba(74, 240, 168, 0.10), rgba(74, 240, 168, 0.00) 70%);
+  box-shadow: inset 3px 0 0 var(--c-grn);
+  animation: kx-fresh 4s ease forwards;
+}
+@keyframes kx-fresh {
+  to {
+    background: rgba(255, 255, 255, 0.00);
+    box-shadow: inset 3px 0 0 transparent;
+  }
+}
+
+/* Name + masked token stacked in the first column */
+.kx-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--white);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.kx-name .botdot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.kx-name-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.kx-name-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kx-token-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: rgba(245, 245, 247, 0.55);
+  min-width: 0;
+}
+.kx-token-mini .tok {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 7px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260px;
+  letter-spacing: 0.02em;
+}
+.iconbtn.xs {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+}
+
+/* Generic iconbtn (kept for token cell reveal/copy on small screens) */
+.iconbtn {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--gray);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: none;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+.iconbtn:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+}
+.iconbtn.copied { color: var(--c-grn); border-color: rgba(74, 240, 168, 0.4); }
+
+/* Limits column */
+.kx-limits {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.kx-limit-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+}
+.kx-limit-row .lk {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray2);
+}
+.kx-limit-row .lv {
+  color: var(--white);
+  letter-spacing: 0.02em;
+  font-feature-settings: 'tnum' 1;
+}
+
+.kx-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--gray);
+  letter-spacing: 0.02em;
+}
+
+/* Status pill */
+.kx-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 100px;
+  border: 1px solid;
+}
+.kx-status .pulse {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.kx-status.active   { color: var(--c-grn); border-color: rgba(74, 240, 168, 0.35); background: rgba(74, 240, 168, 0.06); }
+.kx-status.active .pulse   { background: var(--c-grn); box-shadow: 0 0 8px var(--c-grn); animation: kx-pulse 1.6s ease-in-out infinite; }
+.kx-status.paused   { color: #ffb86c;     border-color: rgba(255, 184, 108, 0.32); background: rgba(255, 184, 108, 0.05); }
+.kx-status.paused .pulse   { background: #ffb86c; }
+.kx-status.revoked  { color: var(--gray); border-color: var(--border); background: transparent; }
+.kx-status.revoked .pulse  { background: var(--gray2); }
+
+@keyframes kx-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* Delete action */
+.kx-delete {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--gray);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: none;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+.kx-delete:hover {
+  color: var(--c-red);
+  border-color: rgba(255, 77, 99, 0.5);
+  background: rgba(255, 77, 99, 0.08);
+}
+
+/* Security warning */
+.kx-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 22px;
+  border: 1px solid rgba(255, 77, 99, 0.28);
+  border-radius: 12px;
+  background:
+    linear-gradient(90deg, rgba(255, 77, 99, 0.06), rgba(255, 77, 99, 0.02));
+  margin-top: 22px;
+}
+.kx-warn-icon {
+  width: 30px; height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 77, 99, 0.45);
+  color: var(--c-red);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 16px;
+  font-weight: 600;
+}
+.kx-warn-body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(245, 245, 247, 0.78);
+}
+.kx-warn-body strong {
+  color: var(--c-red);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.kx-warn-body code {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: rgba(255, 77, 99, 0.08);
+  border: 1px solid rgba(255, 77, 99, 0.18);
+  color: var(--c-red);
+}
+
+/* Toast (after generating a key) */
+.kx-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  padding: 12px 22px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: rgba(6, 6, 10, 0.86);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 200;
+  box-shadow:
+    -3px 0 22px rgba(255, 77, 99, 0.25),
+     3px 0 22px rgba(94, 142, 255, 0.25);
+}
+.kx-toast.on {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.kx-toast .checkdot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: var(--c-grn);
+  box-shadow: 0 0 8px var(--c-grn);
+  vertical-align: middle;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .kx-row { grid-template-columns: 1.6fr 1.2fr 0.7fr 0.4fr; }
+  .kx-row .col-status { display: none; }
+}
+@media (max-width: 760px) {
+  .kx-cta { grid-template-columns: 1fr; }
+  .kx-row { grid-template-columns: 1fr; gap: 12px; padding: 16px 18px; }
+  .kx-row.head { display: none; }
+  .kx-token-mini .tok { max-width: none; }
+  .kx-modal { padding: 28px 22px 24px; }
+  .kx-field-row { grid-template-columns: 1fr; }
+}
+
+/* ============================ MODAL FORM ============================ */
+.kx-modal-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(6, 6, 10, 0.74);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: kx-fadein 0.22s ease;
+}
+@keyframes kx-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.kx-modal {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  padding: 34px 36px 30px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background:
+    radial-gradient(110% 200% at 100% 0%, rgba(94, 142, 255, 0.10), transparent 60%),
+    radial-gradient(110% 200% at 0% 100%, rgba(255, 77, 99, 0.06), transparent 60%),
+    rgba(10, 10, 16, 0.94);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  animation: kx-popin 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes kx-popin {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.kx-modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--gray);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: none;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+.kx-modal-close:hover {
+  color: #fff;
+  border-color: var(--border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.kx-modal-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 18px;
+}
+.kx-modal-eyebrow .pip {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.kx-modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  letter-spacing: -0.015em;
+  color: var(--white);
+  margin-bottom: 8px;
+  line-height: 1.15;
+}
+.kx-modal-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(245, 245, 247, 0.62);
+  margin-bottom: 22px;
+  max-width: 440px;
+}
+
+.kx-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.kx-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.kx-field-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+.kx-field input {
+  width: 100%;
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  outline: none;
+  letter-spacing: 0.02em;
+  cursor: none;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.22s;
+}
+.kx-field input::placeholder { color: var(--gray2); }
+.kx-field input:focus {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow:
+    -2px 0 14px rgba(255, 77, 99, 0.20),
+     2px 0 14px rgba(94, 142, 255, 0.20);
+}
+.kx-field-hint {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--gray2);
+  line-height: 1.5;
+}
+.kx-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.kx-field-input-with-suffix {
+  position: relative;
+  display: block;
+}
+.kx-field-input-with-suffix input {
+  padding-right: 92px;
+}
+.kx-field-input-with-suffix .suffix {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gray);
+  pointer-events: none;
+}
+
+.kx-form-error {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--c-red);
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 77, 99, 0.32);
+  border-radius: 8px;
+  background: rgba(255, 77, 99, 0.06);
+}
+
+.kx-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+}
+.kx-btn-ghost {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gray);
+  padding: 11px 18px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: none;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+.kx-btn-ghost:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+}
+.kx-generate.compact {
+  padding: 11px 18px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+.kx-generate.compact .plus {
+  width: 18px; height: 18px;
+  font-size: 12px;
+}

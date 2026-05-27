@@ -68,23 +68,28 @@ export function Nav() {
               {l.label}
             </a>
           ))}
-          <div className="nav-connect">
-            <button type="button" className="nav-connect-trigger">
-              Connect <span className="nav-connect-caret">▾</span>
+          <div className="nav-dropdown">
+            <button type="button" className="nav-dropdown-trigger" aria-haspopup="true">
+              Connect
+              <svg className="caret" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
+                <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </button>
-            <div className="nav-connect-menu">
-              <Link href="/ai-agents" className="nav-connect-item" data-page-link>
-                <span className="nav-connect-dot ai" />
-                AI Agents
-              </Link>
-              <Link href="/api-keys" className="nav-connect-item" data-page-link>
-                <span className="nav-connect-dot api" />
-                API Keys
-              </Link>
-              <Link href="/web-sdk" className="nav-connect-item" data-page-link>
-                <span className="nav-connect-dot web" />
-                Web SDK
-              </Link>
+            <div className="nav-dropdown-menu" role="menu">
+              <div className="nav-dropdown-menu-inner">
+                <Link href="/connect/ai-agents" data-page-link role="menuitem">
+                  <span className="dot ai" />
+                  AI Agents
+                </Link>
+                <Link href="/connect/api-keys" data-page-link role="menuitem">
+                  <span className="dot api" />
+                  API Keys
+                </Link>
+                <Link href="/connect/web-sdk" data-page-link role="menuitem">
+                  <span className="dot web" />
+                  Web SDK
+                </Link>
+              </div>
             </div>
           </div>
           <a

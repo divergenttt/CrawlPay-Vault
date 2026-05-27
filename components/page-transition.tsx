@@ -41,8 +41,9 @@ export function PageTransition() {
       window.setTimeout(() => router.push(href), 520);
     };
 
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
+    // Capture phase ensures we intercept Link clicks before Next.js handles them.
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
   }, []);
 
   return (

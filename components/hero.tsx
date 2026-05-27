@@ -44,8 +44,10 @@ export function Hero() {
                 {[...Array(6)].map((_, i) => (
                   <span key={i} className="marquee-item">
                     <span className="marquee-dot">Arc</span>
+                    <span className="marquee-dot">Base</span>
                     <span className="marquee-dot">Circle</span>
                     <span className="marquee-dot">Story Protocol</span>
+                    <span className="marquee-dot">ElizaOS</span>
                     <span className="marquee-dot">Exa</span>
                     <span className="marquee-dot">x402</span>
                     <span className="marquee-dot">IPFS</span>
