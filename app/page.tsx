@@ -8,6 +8,7 @@ import { FlowSection } from "@/components/sections/flow-section";
 import { ProtocolSection } from "@/components/sections/protocol-section";
 import { SdkSection } from "@/components/sections/sdk-section";
 import { StackSection } from "@/components/sections/stack-section";
+import { PrivyPreload } from "@/components/privy-preload";
 import { useCursor, useFadeIn } from "@/lib/hooks";
 
 export default function Home() {
@@ -16,6 +17,7 @@ export default function Home() {
 
   return (
     <>
+      <PrivyPreload />
       <PageTransition />
       <div className="cursor-ring" />
       <div className="cursor-dot" />

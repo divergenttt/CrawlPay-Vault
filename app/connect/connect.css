@@ -64,6 +64,17 @@ body.connect-page .db-header.cn-fixed-header .db-header-left {
 }
 body.connect-page .db-header.cn-fixed-header .db-header-right {
   gap: 12px;
+  align-items: center;
+}
+body.connect-page .cp-user-wrap {
+  z-index: 1;
+}
+
+body.connect-page .kx-auth-card,
+body.connect-page .kx-social-btn,
+body.connect-page .cp-signed-banner {
+  position: relative;
+  z-index: 1;
 }
 body.connect-page .db-header.cn-fixed-header .db-live,
 body.connect-page .db-header.cn-fixed-header .db-back {

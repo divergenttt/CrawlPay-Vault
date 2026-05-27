@@ -28,7 +28,7 @@
 
 html {
   scroll-behavior: smooth;
-  scrollbar-gutter: stable both-edges;
+  scrollbar-gutter: stable;
 }
 html, body {
   background: var(--bg);
@@ -49,12 +49,12 @@ button { cursor: none; font-family: inherit; }
 .italic { font-style: italic; }
 .mono { font-family: var(--font-dm-mono), ui-monospace, monospace; }
 
-/* Custom Cursor */
+/* Custom Cursor — normal blend so it stays visible on nav / button labels */
 .cursor-dot, .cursor-ring {
   position: fixed;
   top: 0; left: 0;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 100000;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   transition: width 0.18s ease, height 0.18s ease, border-color 0.18s ease, background 0.18s ease;
@@ -63,17 +63,28 @@ button { cursor: none; font-family: inherit; }
 .cursor-dot {
   width: 6px; height: 6px;
   background: #fff;
-  mix-blend-mode: difference;
+  mix-blend-mode: normal;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.45);
 }
 .cursor-ring {
   width: 28px; height: 28px;
-  border: 0.5px solid rgba(255, 255, 255, 0.55);
-  mix-blend-mode: difference;
+  border: 0.5px solid rgba(255, 255, 255, 0.85);
+  mix-blend-mode: normal;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
 }
 .cursor-dot.hover  { width: 15px; height: 15px; }
 .cursor-ring.hover { width: 44px; height: 44px; border-color: #fff; }
 
 ::selection { background: var(--c-blu); color: #fff; }
+
+/* Privy modal must sit above connect page layers / custom cursor */
+#privy-dialog-backdrop {
+  z-index: 99990 !important;
+}
+#privy-dialog,
+#privy-modal-content {
+  z-index: 99991 !important;
+}
 
 /* ============================ NAV ============================ */
 .nav {
@@ -95,6 +106,7 @@ button { cursor: none; font-family: inherit; }
 }
 .nav-left  { display: flex; align-items: center; gap: 14px; justify-self: start; }
 .nav-right { display: flex; align-items: center; gap: 14px; justify-self: end; }
+.nav-right .cp-user-wrap { position: relative; }
 .nav-center {
   justify-self: center;
   display: flex;
@@ -140,6 +152,8 @@ button { cursor: none; font-family: inherit; }
   margin-bottom: -10px;
 }
 .nav-dropdown-trigger {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -199,6 +213,8 @@ button { cursor: none; font-family: inherit; }
   -webkit-backdrop-filter: blur(16px);
 }
 .nav-dropdown-menu-inner a {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -364,6 +380,12 @@ button { cursor: none; font-family: inherit; }
     -2px 0 16px rgba(255, 77, 99, 0.35),
      2px 0 16px rgba(94, 142, 255, 0.35);
 }
+.nav-cta,
+.cp-user-signin {
+  position: relative;
+  z-index: 1;
+}
+
 .nav-cta {
   font-family: var(--font-dm-mono), monospace;
   font-size: 12px;
@@ -668,6 +690,15 @@ h1.hero-title .accent {
   -webkit-background-clip: text;
           background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+.section-title-nowrap {
+  white-space: nowrap;
+  text-wrap: nowrap;
+}
+.section-head-sdk-title {
+  display: flex;
+  justify-content: center;
+  text-align: center;
 }
 .section-kicker {
   font-size: 15px;

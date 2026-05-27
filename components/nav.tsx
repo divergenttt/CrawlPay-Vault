@@ -1,15 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import "@/components/auth/user-account-menu.css";
 import { LogoMark } from "@/components/logo-mark";
 import { useScrolled } from "@/lib/hooks";
 
 const NAV_SECTIONS = ["protocol", "flow", "sdk"] as const;
 
+const CONNECT_ROUTES = [
+  "/connect/ai-agents",
+  "/connect/api-keys",
+  "/connect/web-sdk",
+] as const;
+
 export function Nav() {
   const scrolled = useScrolled(40);
   const [active, setActive] = useState("");
+
+  const warmPrivy = useCallback(() => {
+    void import("@/app/privy-providers");
+  }, []);
 
   useEffect(() => {
     const io = new IntersectionObserver(
@@ -68,7 +79,11 @@ export function Nav() {
               {l.label}
             </a>
           ))}
-          <div className="nav-dropdown">
+          <div
+            className="nav-dropdown"
+            onMouseEnter={warmPrivy}
+            onFocus={warmPrivy}
+          >
             <button type="button" className="nav-dropdown-trigger" aria-haspopup="true">
               Connect
               <svg className="caret" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
@@ -77,18 +92,23 @@ export function Nav() {
             </button>
             <div className="nav-dropdown-menu" role="menu">
               <div className="nav-dropdown-menu-inner">
-                <Link href="/connect/ai-agents" data-page-link role="menuitem">
-                  <span className="dot ai" />
-                  AI Agents
-                </Link>
-                <Link href="/connect/api-keys" data-page-link role="menuitem">
-                  <span className="dot api" />
-                  API Keys
-                </Link>
-                <Link href="/connect/web-sdk" data-page-link role="menuitem">
-                  <span className="dot web" />
-                  Web SDK
-                </Link>
+                {CONNECT_ROUTES.map((href, i) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    prefetch
+                    data-page-link
+                    role="menuitem"
+                    onMouseEnter={warmPrivy}
+                  >
+                    <span className={`dot ${["ai", "api", "web"][i]}`} />
+                    {href === "/connect/ai-agents"
+                      ? "AI Agents"
+                      : href === "/connect/api-keys"
+                        ? "API Keys"
+                        : "Web SDK"}
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
@@ -102,7 +122,16 @@ export function Nav() {
         </div>
       </div>
       <div className="nav-right">
-        <Link href="/dashboard" className="nav-cta" data-page-link>
+        <Link
+          href="/connect/api-keys"
+          className="cp-user-signin"
+          data-page-link
+          prefetch
+          onMouseEnter={warmPrivy}
+        >
+          Sign in
+        </Link>
+        <Link href="/dashboard" className="nav-cta" data-page-link prefetch>
           Dashboard
         </Link>
       </div>

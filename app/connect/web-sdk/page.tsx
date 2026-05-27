@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
-import { LogoMark } from "@/components/logo-mark";
+import { ConnectSiteHeader } from "@/components/connect/connect-site-header";
 import { PageTransition } from "@/components/page-transition";
 import { useCursor } from "@/lib/hooks";
 import "../connect.css";
@@ -100,28 +100,6 @@ function CodeBlock({ lang, source }: { lang: keyof typeof LANG_META; source: str
   );
 }
 
-function ConnectHeader() {
-  return (
-    <header className="db-header cn-fixed-header">
-      <div className="db-header-left">
-        <Link href="/" className="db-brand" data-page-link>
-          <LogoMark size={18} color="#fff" />
-          <span>CrawlPay</span>
-        </Link>
-      </div>
-      <div className="db-header-right">
-        <span className="db-live">
-          <span className="db-live-dot" />
-          <span>LIVE</span>
-        </span>
-        <Link href="/" className="db-back" data-page-link>
-          ← HOME
-        </Link>
-      </div>
-    </header>
-  );
-}
-
 export default function ConnectWebSdkPage() {
   useCursor();
 
@@ -136,7 +114,7 @@ export default function ConnectWebSdkPage() {
       <div className="cursor-ring" />
       <div className="cursor-dot" />
       <main className="db-shell">
-        <ConnectHeader />
+        <ConnectSiteHeader />
 
         <section className="cn-hero cn-hero-stacked">
           <div>

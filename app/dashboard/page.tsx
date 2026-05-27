@@ -6,6 +6,7 @@ import { DashboardChart } from "@/components/dashboard/dashboard-chart";
 import { DashboardPaymentsTable } from "@/components/dashboard/dashboard-payments-table";
 import { LogoMark } from "@/components/logo-mark";
 import { PageTransition } from "@/components/page-transition";
+import { authFetch } from "@/lib/auth/client";
 import { useClock, useCursor } from "@/lib/hooks";
 import { createClient } from "@/lib/payments/supabase";
 import type {
@@ -140,7 +141,7 @@ export default function DashboardPage() {
 
   async function fetchBalance() {
     try {
-      const res = await fetch(`/api/balance?t=${Date.now()}`, {
+      const res = await authFetch(`/api/balance?t=${Date.now()}`, {
         cache: "no-store",
         headers: { "Cache-Control": "no-cache" },
       });
@@ -171,7 +172,7 @@ export default function DashboardPage() {
 
   async function fetchStats() {
     try {
-      const res = await fetch("/api/stats", { next: { revalidate: 10 } });
+      const res = await authFetch("/api/stats", { cache: "no-store" });
       if (!res.ok) {
         console.error("Stats fetch error:", res.status, res.statusText);
         return;
@@ -185,7 +186,7 @@ export default function DashboardPage() {
 
   async function fetchData() {
     try {
-      const res = await fetch(
+      const res = await authFetch(
         `/api/payments?page=1&limit=100&t=${Date.now()}`,
         {
           cache: "no-store",

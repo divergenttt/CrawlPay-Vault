@@ -1,10 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { LogoMark } from "@/components/logo-mark";
+import { useCallback, useEffect, useState } from "react";
+import { authFetch } from "@/lib/auth/client";
+import { useAuthUi } from "@/lib/auth/auth-ui-context";
+import { useServerVerifiedSession } from "@/lib/auth/use-server-verified-session";
+import { useOAuthReturn } from "@/lib/auth/use-oauth-return";
+import {
+  SOCIAL_PROVIDERS,
+  useSocialLogin,
+} from "@/lib/auth/use-social-login";
+import {
+  SignedInBanner,
+  type SessionStatus,
+} from "@/components/auth/user-account-menu";
+import { ConnectSiteHeader } from "@/components/connect/connect-site-header";
 import { PageTransition } from "@/components/page-transition";
-import { useCursor } from "@/lib/hooks";
+import { useClientMounted, useCursor } from "@/lib/hooks";
 import "../connect.css";
 import "../api-keys.css";
 import "@/app/dashboard/dashboard.css";
@@ -13,19 +25,37 @@ type KeyStatus = "active" | "paused" | "revoked";
 type KeyRowData = {
   id: string;
   name: string;
-  token: string;
+  /** Full token — only available immediately after create. */
+  token?: string;
+  tokenPrefix: string;
   perReq: string;
   daily: string;
   created: string;
   status: KeyStatus;
 };
 
-const SEED: KeyRowData[] = [
-  { id: "k1", name: "Eliza_Bot_Main", token: "cr_live_8d7c1a4e92b6f0a3c8e4d1f29b5a4a2b", perReq: "0.01", daily: "0.50", created: "26.05.2026", status: "active" },
-  { id: "k2", name: "Claude_Desktop", token: "cr_live_3a5f7b1c9e2d8a4f0c6b1d2e3f47e3c1", perReq: "0.005", daily: "0.25", created: "14.05.2026", status: "active" },
-  { id: "k3", name: "Research_Worker", token: "cr_live_2c4e6f8a0b1d3e5f7a9c1e2d3f4ab8d2", perReq: "0.02", daily: "1.00", created: "02.05.2026", status: "paused" },
-  { id: "k4", name: "CI_Eliza_Staging", token: "cr_live_9b1e4f8c2a3d6e0f5a7b9c1d3e5f7d1a", perReq: "0.001", daily: "0.10", created: "11.04.2026", status: "revoked" },
-];
+type ApiKeyPublic = {
+  id: string;
+  name: string;
+  tokenPrefix: string;
+  perReq: string;
+  daily: string;
+  created: string;
+  status: KeyStatus;
+};
+
+function apiKeyToRow(key: ApiKeyPublic, token?: string): KeyRowData {
+  return {
+    id: key.id,
+    name: key.name,
+    token,
+    tokenPrefix: key.tokenPrefix,
+    perReq: key.perReq,
+    daily: key.daily,
+    created: key.created,
+    status: key.status,
+  };
+}
 
 const STATUS_META = {
   active: { label: "✓ Active", cls: "active" },
@@ -33,42 +63,13 @@ const STATUS_META = {
   revoked: { label: "× Revoked", cls: "revoked" },
 } as const;
 
-function randomHex(len: number): string {
-  const chars = "0123456789abcdef";
-  let out = "";
-  for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * 16)];
-  return out;
-}
-
-function newToken(): string {
-  return `cr_live_${randomHex(32)}`;
+function displayToken(row: KeyRowData): string {
+  return row.token ?? `${row.tokenPrefix}••••••••••••••••••••`;
 }
 
 function mask(token: string): string {
   if (!token) return "";
   return `${token.slice(0, 8)}••••••••••••••••••••${token.slice(-4)}`;
-}
-
-function ConnectHeader() {
-  return (
-    <header className="db-header cn-fixed-header">
-      <div className="db-header-left">
-        <Link href="/" className="db-brand" data-page-link>
-          <LogoMark size={18} color="#fff" />
-          <span>CrawlPay</span>
-        </Link>
-      </div>
-      <div className="db-header-right">
-        <span className="db-live">
-          <span className="db-live-dot" />
-          <span>LIVE</span>
-        </span>
-        <Link href="/" className="db-back" data-page-link>
-          ← HOME
-        </Link>
-      </div>
-    </header>
-  );
 }
 
 function KeyRow({
@@ -91,8 +92,12 @@ function KeyRow({
     if (isFresh) setShown(true);
   }, [isFresh]);
 
+  const tokenText = displayToken(row);
+  const canCopy = Boolean(row.token);
+
   const copy = async () => {
-    if (navigator.clipboard) await navigator.clipboard.writeText(row.token);
+    if (!row.token || !navigator.clipboard) return;
+    await navigator.clipboard.writeText(row.token);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -106,13 +111,15 @@ function KeyRow({
         <span className="kx-name-stack">
           <span className="kx-name-label">{row.name}</span>
           <span className="kx-token-mini">
-            <span className="tok">{shown ? row.token : mask(row.token)}</span>
+            <span className="tok">{shown ? tokenText : mask(tokenText)}</span>
             <button type="button" className="iconbtn xs" aria-label={shown ? "Hide token" : "Show token"} onClick={() => setShown((v) => !v)}>
               {shown ? "🙈" : "👁"}
             </button>
-            <button type="button" className={`iconbtn xs${copied ? " copied" : ""}`} aria-label="Copy token" onClick={copy}>
-              {copied ? "✓" : "⧉"}
-            </button>
+            {canCopy ? (
+              <button type="button" className={`iconbtn xs${copied ? " copied" : ""}`} aria-label="Copy token" onClick={copy}>
+                {copied ? "✓" : "⧉"}
+              </button>
+            ) : null}
           </span>
         </span>
       </div>
@@ -142,22 +149,82 @@ function KeyRow({
   );
 }
 
-export default function ConnectApiKeysPage() {
+function AuthGateLoading() {
+  return (
+    <section className="kx-auth-gate">
+      <div className="kx-auth-card">
+        <div className="kx-auth-title">Access required to create API keys</div>
+        <div className="kx-auth-sub">Starting sign-in…</div>
+      </div>
+    </section>
+  );
+}
+
+function ConnectApiKeysPageContent() {
   useCursor();
-  const [rows, setRows] = useState<KeyRowData[]>(SEED);
+  const mounted = useClientMounted();
+  const { clearLoginPhase } = useAuthUi();
+  const {
+    signInWithProvider,
+    activeProvider,
+    pending: authPending,
+    error: socialLoginError,
+    setError: setAuthError,
+  } = useSocialLogin();
+  const { isSignedIn, ready, serverVerified, sessionChecking } =
+    useServerVerifiedSession(setAuthError);
+
+  useOAuthReturn(setAuthError);
+
+  useEffect(() => {
+    if (!authPending || isSignedIn) return;
+    const timeout = window.setTimeout(() => {
+      clearLoginPhase();
+      setAuthError(
+        "Sign-in is taking longer than expected. If this persists, check Privy Dashboard (Allowed domains, Google OAuth, Base Sepolia wallet) and try again."
+      );
+    }, 40_000);
+    return () => window.clearTimeout(timeout);
+  }, [authPending, isSignedIn, clearLoginPhase, setAuthError]);
+
+  const [rows, setRows] = useState<KeyRowData[]>([]);
+  const [keysLoading, setKeysLoading] = useState(false);
+  const [keysError, setKeysError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [justCreatedId, setJustCreatedId] = useState<string | null>(null);
-
   const [fName, setFName] = useState("");
   const [fPerReq, setFPerReq] = useState("0.01");
   const [fDaily, setFDaily] = useState("0.50");
   const [fError, setFError] = useState("");
 
+  const loadKeys = useCallback(async () => {
+    if (!isSignedIn) return;
+    setKeysLoading(true);
+    setKeysError(null);
+    try {
+      const res = await authFetch("/api/keys", { cache: "no-store" });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? `HTTP ${res.status}`);
+      }
+      const data = (await res.json()) as { keys: ApiKeyPublic[] };
+      setRows((data.keys ?? []).map((k) => apiKeyToRow(k)));
+    } catch (err) {
+      setKeysError(err instanceof Error ? err.message : "Failed to load keys");
+    } finally {
+      setKeysLoading(false);
+    }
+  }, [isSignedIn]);
+
   useEffect(() => {
     document.body.classList.add("connect-page");
     return () => document.body.classList.remove("connect-page");
   }, []);
+
+  useEffect(() => {
+    if (isSignedIn) void loadKeys();
+  }, [isSignedIn, loadKeys]);
 
   useEffect(() => {
     if (!modalOpen) return;
@@ -168,7 +235,7 @@ export default function ConnectApiKeysPage() {
     return () => document.removeEventListener("keydown", onKey);
   }, [modalOpen]);
 
-  const openModal = () => {
+  const openModal = async () => {
     setFName("");
     setFPerReq("0.01");
     setFDaily("0.50");
@@ -176,7 +243,30 @@ export default function ConnectApiKeysPage() {
     setModalOpen(true);
   };
 
-  const submit = (e: React.FormEvent) => {
+  const authError = socialLoginError;
+
+  const sessionStatus: SessionStatus | undefined = !isSignedIn
+    ? undefined
+    : sessionChecking
+      ? "checking"
+      : serverVerified
+        ? "verified"
+        : "unverified";
+
+  const deleteKey = async (id: string) => {
+    try {
+      const res = await authFetch(`/api/keys/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? `HTTP ${res.status}`);
+      }
+      setRows((prev) => prev.filter((k) => k.id !== id));
+    } catch (err) {
+      setKeysError(err instanceof Error ? err.message : "Failed to delete key");
+    }
+  };
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const name = fName.trim() || `New_Agent_Key_${rows.length + 1}`;
     const pr = parseFloat(fPerReq);
@@ -185,22 +275,35 @@ export default function ConnectApiKeysPage() {
     if (Number.isNaN(dl) || dl <= 0) return setFError("Daily limit must be a positive number.");
     if (dl < pr) return setFError("Daily limit cannot be less than per-request limit.");
 
-    const fresh: KeyRowData = {
-      id: `k${Date.now()}`,
-      name: name.replace(/\s+/g, "_"),
-      token: newToken(),
-      perReq: pr.toFixed(pr < 0.01 ? 3 : 2),
-      daily: dl.toFixed(dl < 0.01 ? 3 : 2),
-      created: new Date().toLocaleDateString("en-GB").replace(/\//g, "."),
-      status: "active",
-    };
-
-    setRows((prev) => [fresh, ...prev]);
-    setJustCreatedId(fresh.id);
-    setToast("New key created · copy it now");
-    setTimeout(() => setToast(null), 2600);
-    setTimeout(() => setJustCreatedId(null), 4500);
-    setModalOpen(false);
+    setFError("");
+    try {
+      const res = await authFetch("/api/keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.replace(/\s+/g, "_"),
+          perReq: pr,
+          daily: dl,
+        }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? `HTTP ${res.status}`);
+      }
+      const data = (await res.json()) as {
+        key: ApiKeyPublic;
+        token: string;
+      };
+      const fresh = apiKeyToRow(data.key, data.token);
+      setRows((prev) => [fresh, ...prev]);
+      setJustCreatedId(fresh.id);
+      setToast("New key created · copy it now");
+      setTimeout(() => setToast(null), 2600);
+      setTimeout(() => setJustCreatedId(null), 4500);
+      setModalOpen(false);
+    } catch (err) {
+      setFError(err instanceof Error ? err.message : "Failed to create key");
+    }
   };
 
   return (
@@ -209,7 +312,10 @@ export default function ConnectApiKeysPage() {
       <div className="cursor-ring" />
       <div className="cursor-dot" />
       <main className="db-shell">
-        <ConnectHeader />
+        <ConnectSiteHeader
+          sessionStatus={sessionStatus}
+          showAccountMenu={false}
+        />
 
         <section className="cn-hero cn-hero-stacked">
           <div>
@@ -227,38 +333,119 @@ export default function ConnectApiKeysPage() {
           </div>
         </section>
 
-        <section className="kx-cta">
-          <div>
-            <div className="kx-cta-title">Create a key for your bot</div>
-            <div className="kx-cta-sub">
-              Set a name and two spending limits - per request and per day. Works with Eliza plugin, MCP tools and direct SDK integrations.
-            </div>
-          </div>
-          <button type="button" className="kx-generate" onClick={openModal}>
-            <span className="plus">+</span>
-            Generate new API Key
-          </button>
-        </section>
+        {!mounted ? (
+          <AuthGateLoading />
+        ) : null}
 
-        <section className="cn-section">
-          <div className="cn-section-head">
-            <h2 className="cn-section-title">Your active keys</h2>
-            <span className="cn-section-sub">{rows.length} keys · live data</span>
-          </div>
-
-          <div className="kx-table">
-            <div className="kx-row head">
-              <div>Name &amp; token</div>
-              <div>Limits (USDC)</div>
-              <div>Created</div>
-              <div className="col-status">Status</div>
-              <div />
-            </div>
-            {rows.map((row, i) => (
-              <KeyRow key={row.id} row={row} index={i} justCreatedId={justCreatedId} onDelete={(id) => setRows((prev) => prev.filter((k) => k.id !== id))} />
+        {mounted && authError && !isSignedIn ? (
+          <div className="kx-auth-error kx-auth-error-banner" role="alert">
+            {authError.split("\n").map((line) => (
+              <p key={line} className="mb-1 last:mb-0">
+                {line}
+              </p>
             ))}
           </div>
-        </section>
+        ) : null}
+
+        {mounted && isSignedIn ? (
+          <SignedInBanner sessionStatus={sessionStatus} />
+        ) : null}
+
+        {mounted && !isSignedIn && !ready ? (
+          <AuthGateLoading />
+        ) : mounted && !isSignedIn ? (
+          <section className="kx-auth-gate">
+            <div className="kx-auth-card">
+              <div className="kx-auth-title">Access required to create API keys</div>
+              <div className="kx-auth-sub">
+                {authPending
+                  ? "Redirecting to provider…"
+                  : "Sign in with Google, GitHub, Telegram, or X to unlock key generation and controls for your agents."}
+              </div>
+              <p className="kx-auth-label">Continue with</p>
+              <div className="kx-social-grid">
+                {SOCIAL_PROVIDERS.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className="kx-social-btn"
+                    disabled={!ready || authPending}
+                    onClick={() => void signInWithProvider(id)}
+                  >
+                    {!ready
+                      ? "…"
+                      : authPending && activeProvider === id
+                        ? "Redirecting…"
+                        : label}
+                  </button>
+                ))}
+              </div>
+              {authError ? (
+                <div className="kx-auth-error" role="alert">
+                  {authError.split("\n").map((line) => (
+                    <p key={line} className="mb-1 last:mb-0">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : mounted && isSignedIn ? (
+          <>
+            <section className="kx-cta">
+              <div>
+                <div className="kx-cta-title">Create a key for your bot</div>
+                <div className="kx-cta-sub">
+                  Set a name and two spending limits - per request and per day. Works with Eliza plugin, MCP tools and direct SDK integrations.
+                </div>
+              </div>
+              <button
+                type="button"
+                className="kx-generate"
+                disabled={sessionChecking}
+                onClick={openModal}
+              >
+                <span className="plus">+</span>
+                {sessionChecking ? "Verifying session…" : "Generate new API Key"}
+              </button>
+            </section>
+
+            <section className="cn-section">
+              <div className="cn-section-head">
+                <h2 className="cn-section-title">Your active keys</h2>
+                <span className="cn-section-sub">
+                  {keysLoading ? "Loading…" : `${rows.length} keys · live data`}
+                </span>
+              </div>
+
+              {keysError ? (
+                <div className="kx-auth-error kx-auth-error-banner" role="alert">
+                  {keysError}
+                </div>
+              ) : null}
+
+              <div className="kx-table">
+                <div className="kx-row head">
+                  <div>Name &amp; token</div>
+                  <div>Limits (USDC)</div>
+                  <div>Created</div>
+                  <div className="col-status">Status</div>
+                  <div />
+                </div>
+                {rows.map((row, i) => (
+                  <KeyRow
+                    key={row.id}
+                    row={row}
+                    index={i}
+                    justCreatedId={justCreatedId}
+                    onDelete={(id) => void deleteKey(id)}
+                  />
+                ))}
+              </div>
+            </section>
+          </>
+        ) : null}
 
         <div className="cn-foot">
           <span>Connect · API Keys · {rows.length} on file</span>
@@ -330,3 +517,5 @@ export default function ConnectApiKeysPage() {
     </>
   );
 }
+
+export default ConnectApiKeysPageContent;

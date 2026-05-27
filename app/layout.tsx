@@ -39,7 +39,9 @@ export default function RootLayout({
       lang="en"
       className={`${playfair.variable} ${dmMono.variable} ${dmSans.variable}`}
     >
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+      </body>
     </html>
   );
 }

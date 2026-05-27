@@ -1,5 +1,6 @@
 import { GatewayClient } from "@circle-fin/x402-batching/client";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requireDashboardAuth } from "@/lib/auth/require-dashboard";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,7 +12,10 @@ const ZERO_BALANCE = {
   withdrawing: "0",
 };
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireDashboardAuth(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const privateKey = process.env.SELLER_PRIVATE_KEY;
     if (!privateKey) {

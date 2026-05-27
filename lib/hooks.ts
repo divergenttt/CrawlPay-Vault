@@ -2,6 +2,15 @@
 
 import { useEffect, useState } from "react";
 
+/** Avoid hydration mismatch for browser-only auth / URL state. */
+export function useClientMounted(): boolean {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  return mounted;
+}
+
 export function useCursor(): void {
   useEffect(() => {
     const dot = document.querySelector(".cursor-dot");

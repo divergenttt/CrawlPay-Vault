@@ -1,3 +1,5 @@
+import { ConnectProviders } from "../connect-providers";
+import { DashboardAuthShell } from "@/components/dashboard/dashboard-auth-shell";
 import "./dashboard.css";
 
 export default function DashboardLayout({
@@ -5,5 +7,11 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="dashboard-page">{children}</div>;
+  return (
+    <ConnectProviders>
+      <div className="dashboard-page">
+        <DashboardAuthShell>{children}</DashboardAuthShell>
+      </div>
+    </ConnectProviders>
+  );
 }

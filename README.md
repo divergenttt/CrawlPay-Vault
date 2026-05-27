@@ -135,6 +135,12 @@ Copy `.env.local` from your secrets store. Key variables:
 | `STORY_API_URL` | No | Story-API REST endpoint for CDR DKG state ([CDR runtime config](https://docs.story.foundation/developers/cdr-sdk/advanced-configuration); default: `https://api.story.foundation`). On Aeneid, if the default is unreachable, set to the shared testnet Story-API URL from the docs. |
 | `PINATA_JWT` | For vault uploads | Pinata API token for IPFS |
 | `CRAWLPAY_VAULT_UUID` | For vault demo | Vault UUID to serve via `/api/page` |
+| `NEXT_PUBLIC_PRIVY_APP_ID` | Auth | Privy app ID (Connect + dashboard sign-in) |
+| `PRIVY_APP_SECRET` | Auth | Server-side Privy JWT verification |
+| `API_KEY_HASH_SECRET` | Recommended | Pepper for hashing API key tokens (falls back to `PRIVY_APP_SECRET`) |
+| `DASHBOARD_ALLOWED_PRIVY_USER_IDS` | Optional | Comma-separated Privy user IDs allowed on `/dashboard` APIs; if unset, any signed-in user |
+
+Apply `supabase/migrations/20260527000000_auth_tables.sql` for `api_keys`, `vault_ownership`, and `auth_rate_limits`.
 
 ---
 

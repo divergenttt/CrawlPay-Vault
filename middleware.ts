@@ -25,5 +25,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   runtime: "nodejs",
-  matcher: ["/((?!api|_next|favicon|.*\\..*).*)"],
+  // Exclude /connect/* so OAuth callbacks are not intercepted by the x402 paywall.
+  matcher: ["/((?!api|_next|favicon|connect|.*\\..*).*)"],
 };

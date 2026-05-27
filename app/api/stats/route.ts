@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requireDashboardAuth } from "@/lib/auth/require-dashboard";
 import { supabase } from "@/lib/payments/supabase";
 import type { DashboardStats } from "@/lib/types";
 
@@ -22,16 +23,8 @@ function todayMidnightUtcMs(): number {
   return start.getTime();
 }
 
-function formatErrorResponse(err: unknown) {
-  const details =
-    err instanceof Error
-      ? { name: err.name, message: err.message, stack: err.stack }
-      : err;
-
-  return {
-    error: JSON.stringify(details),
-    details,
-  };
+function formatErrorResponse() {
+  return { error: "Failed to load stats" };
 }
 
 function computeStats(payments: PaymentStatsRow[]): DashboardStats {
@@ -56,7 +49,10 @@ function computeStats(payments: PaymentStatsRow[]): DashboardStats {
   };
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireDashboardAuth(req);
+  if (!auth.ok) return auth.response;
+
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const { data, error } = await supabase
@@ -70,7 +66,7 @@ export async function GET() {
     } catch (err) {
       console.error(`Stats API error (attempt ${attempt}/3):`, err);
       if (attempt === 3) {
-        return NextResponse.json(formatErrorResponse(err), { status: 500 });
+        return NextResponse.json(formatErrorResponse(), { status: 500 });
       }
       await new Promise((r) => setTimeout(r, attempt * 500));
     }
