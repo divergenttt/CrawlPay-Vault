@@ -15,6 +15,8 @@ export type ApiKeyRow = {
   daily_usdc: number;
   status: ApiKeyStatus;
   created_at: string;
+  owner_wallet_address?: string | null;
+  privy_wallet_id?: string | null;
 };
 
 export type ApiKeyPublic = {
@@ -89,7 +91,24 @@ export type CreateApiKeyInput = {
   name: string;
   perReqUsdc: number;
   dailyUsdc: number;
+  ownerWalletAddress?: string;
+  privyWalletId?: string;
 };
+
+export async function updateApiKeyWallet(
+  keyId: string,
+  wallet: { address: string; walletId: string }
+): Promise<void> {
+  const { error } = await supabase
+    .from("api_keys")
+    .update({
+      owner_wallet_address: wallet.address,
+      privy_wallet_id: wallet.walletId,
+    })
+    .eq("id", keyId);
+
+  if (error) throw new Error(error.message);
+}
 
 export async function createApiKeyForUser(
   privyUserId: string,
@@ -104,6 +123,8 @@ export async function createApiKeyForUser(
     per_req_usdc: input.perReqUsdc,
     daily_usdc: input.dailyUsdc,
     status: "active" as const,
+    owner_wallet_address: input.ownerWalletAddress?.trim() || null,
+    privy_wallet_id: input.privyWalletId?.trim() || null,
   };
 
   const { data, error } = await supabase

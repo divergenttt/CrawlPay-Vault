@@ -1,14 +1,40 @@
 import "server-only";
 
 import type { ApiKeyRow } from "@/lib/db/api-keys";
-import { findApiKeyByToken } from "@/lib/db/api-keys";
+import { findApiKeyByToken, updateApiKeyWallet } from "@/lib/db/api-keys";
 import { getApiKeyDailySpent, recordApiKeyUsage } from "@/lib/db/api-key-usage";
 import { getApiKeyTokenFromRequest } from "@/lib/auth/api-key-request";
+import { fetchArcUsdcBalance } from "@/lib/wallet/arc-usdc";
+import { fetchEmbeddedWalletForPrivyUser } from "@/lib/wallet/privy-user-wallet";
+import {
+  isApiKeyOnchainEnabled,
+  settleUsdcFromEmbeddedWallet,
+} from "@/lib/wallet/settle-usdc-on-base";
 import type { NextRequest } from "next/server";
 
 export type ApiKeyAccessResult =
-  | { ok: true; key: ApiKeyRow }
+  | { ok: true; key: ApiKeyRow; walletAddress: string; privyWalletId?: string }
   | { ok: false; status: number; error: string };
+
+async function ensureKeyWallet(key: ApiKeyRow): Promise<ApiKeyRow> {
+  if (key.owner_wallet_address?.trim()) {
+    return key;
+  }
+
+  const wallet = await fetchEmbeddedWalletForPrivyUser(key.privy_user_id);
+  if (!wallet) {
+    throw new Error(
+      "No embedded wallet linked to this account. Sign in and create a wallet before using API keys."
+    );
+  }
+
+  await updateApiKeyWallet(key.id, wallet);
+  return {
+    ...key,
+    owner_wallet_address: wallet.address,
+    privy_wallet_id: wallet.walletId,
+  };
+}
 
 export async function authorizeApiKeyForAmount(
   req: NextRequest,
@@ -16,7 +42,11 @@ export async function authorizeApiKeyForAmount(
 ): Promise<ApiKeyAccessResult> {
   const token = getApiKeyTokenFromRequest(req);
   if (!token) {
-    return { ok: false, status: 401, error: "Missing API key (Bearer cr_live_… or X-CrawlPay-Api-Key)" };
+    return {
+      ok: false,
+      status: 401,
+      error: "Missing API key (Bearer cr_live_… or X-CrawlPay-Api-Key)",
+    };
   }
 
   let key: ApiKeyRow | null;
@@ -58,14 +88,79 @@ export async function authorizeApiKeyForAmount(
     };
   }
 
-  return { ok: true, key };
+  try {
+    key = await ensureKeyWallet(key);
+  } catch (err) {
+    return {
+      ok: false,
+      status: 402,
+      error: err instanceof Error ? err.message : "Wallet not available",
+    };
+  }
+
+  const walletAddress = key.owner_wallet_address!.trim();
+
+  let balance: number;
+  try {
+    balance = await fetchArcUsdcBalance(walletAddress);
+  } catch {
+    return {
+      ok: false,
+      status: 503,
+      error: "Could not verify USDC balance on Base. Try again shortly.",
+    };
+  }
+
+  if (balance < amountUsdc) {
+    return {
+      ok: false,
+      status: 402,
+      error: `Insufficient USDC on Base (${balance.toFixed(3)} available). Top up your wallet to activate agents.`,
+    };
+  }
+
+  return {
+    ok: true,
+    key,
+    walletAddress,
+    privyWalletId: key.privy_wallet_id?.trim() || undefined,
+  };
 }
 
-export async function commitApiKeyUsage(
-  key: ApiKeyRow,
+export type ApiKeySettlement = {
+  txHash: string;
+  mode: "onchain" | "ledger";
+};
+
+export async function settleApiKeyPayment(
+  access: Extract<ApiKeyAccessResult, { ok: true }>,
   amountUsdc: number
-): Promise<void> {
-  await recordApiKeyUsage(key.id, amountUsdc);
+): Promise<ApiKeySettlement> {
+  const seller =
+    process.env.NEXT_PUBLIC_SELLER_ADDRESS?.trim() ||
+    process.env.SELLER_ADDRESS?.trim();
+
+  const walletId = access.privyWalletId;
+  if (isApiKeyOnchainEnabled() && walletId && seller) {
+    try {
+      const { txHash } = await settleUsdcFromEmbeddedWallet({
+        walletId,
+        recipient: seller,
+        amountUsdc,
+      });
+      await recordApiKeyUsage(access.key.id, amountUsdc);
+      return { txHash, mode: "onchain" };
+    } catch (err) {
+      console.error("[CrawlPay] On-chain API key settlement failed:", err);
+      throw err;
+    }
+  }
+
+  await recordApiKeyUsage(access.key.id, amountUsdc);
+  return {
+    txHash: apiKeyTxHash(access.key.id),
+    mode: "ledger",
+  };
 }
 
 export function apiKeyTxHash(keyId: string): string {

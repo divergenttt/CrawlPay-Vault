@@ -80,23 +80,38 @@ async function handleOkResponse(
 }
 
 async function accessCrawlPayPage(url: string): Promise<unknown | null> {
+  const { crawlpayAgentFetch, resolveCrawlPayApiKey } = await import(
+    "../lib/agent/crawlpay-fetch"
+  );
   const botAddress = process.env.NEXT_PUBLIC_SELLER_ADDRESS?.trim();
-
-  const baseHeaders: Record<string, string> = {
-    "User-Agent": BOT_USER_AGENT,
-  };
+  const apiKey = resolveCrawlPayApiKey();
 
   try {
+    if (apiKey) {
+      console.log(`🔑 ${url} — using CrawlPay API key (Base wallet)`);
+      const paid = await crawlpayAgentFetch(url, {
+        apiKey,
+        botUserAgent: BOT_USER_AGENT,
+      });
+      if (paid.ok) {
+        return handleOkResponse(paid, url);
+      }
+      console.log(
+        `❌ ${url} — API key request failed: ${paid.status} ${paid.statusText}`
+      );
+      return null;
+    }
+
     const first = await fetch(url, {
-      headers: baseHeaders,
+      headers: { "User-Agent": BOT_USER_AGENT },
       cache: "no-store",
     });
 
     if (first.status === 402) {
-      console.log(`🚫 ${url} requires payment`);
+      console.log(`🚫 ${url} requires payment (Arc x402 fallback)`);
 
       const paymentHeaders: Record<string, string> = {
-        ...baseHeaders,
+        "User-Agent": BOT_USER_AGENT,
         "payment-signature": "0xsimulated",
         "payment-bot-address": botAddress ?? "",
       };

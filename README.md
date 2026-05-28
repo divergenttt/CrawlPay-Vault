@@ -132,8 +132,9 @@ Run SQL migrations in order:
 
 1. `supabase/migrations/20260527000000_auth_tables.sql` — `api_keys`, `vault_ownership`, `auth_rate_limits`
 2. `supabase/migrations/20260528120000_api_key_usage.sql` — daily spend limits for agent API keys
+3. `supabase/migrations/20260528130000_api_keys_wallet.sql` — wallet address on keys (Base balance gate)
 
-Agents can access paid content with `Authorization: Bearer cr_live_…` on `GET /api/page` (bot User-Agent required). Limits come from the key’s per-request and daily USDC caps.
+Agents use `Authorization: Bearer cr_live_…` on `GET /api/page` (bot User-Agent). Server enforces key limits **and** owner Base USDC balance. Optional `CRAWLPAY_API_KEY_ONCHAIN=true` sends USDC on Base per hit. Arc/x402 headers remain separate — see [docs/AGENTS.md](docs/AGENTS.md).
 
 ---
 

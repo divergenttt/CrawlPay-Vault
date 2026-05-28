@@ -4,6 +4,7 @@ const index_js_1 = require("@modelcontextprotocol/sdk/server/index.js");
 const stdio_js_1 = require("@modelcontextprotocol/sdk/server/stdio.js");
 const types_js_1 = require("@modelcontextprotocol/sdk/types.js");
 const viem_1 = require("viem");
+const crawlpay_fetch_js_1 = require("./crawlpay-fetch.js");
 const TOOL_NAME = "handle_payment_required";
 const server = new index_js_1.Server({
     name: "crawlpay-server",
@@ -85,21 +86,36 @@ server.setRequestHandler(types_js_1.CallToolRequestSchema, async (request) => {
     }
     const { url, amount } = validateArgs(args);
     console.error(`[crawlpay-mcp] 402 context parsed. url=${url} amount=${amount}`);
-    // Placeholder "stored request" structure for Base Account wallet flow.
+    const apiKey = (0, crawlpay_fetch_js_1.resolveCrawlPayApiKey)();
+    if (apiKey) {
+        console.error("[crawlpay-mcp] Retrying with CrawlPay API key (Base wallet)");
+        const res = await (0, crawlpay_fetch_js_1.fetchPaidPage)(url);
+        const body = await res.text();
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: `CrawlPay fetch (${res.status})\n` +
+                        `URL: ${url}\n` +
+                        `Amount: ${amount} USDC\n` +
+                        `Auth: API key (cr_live_…)\n\n` +
+                        body.slice(0, 4000),
+                },
+            ],
+        };
+    }
     const storedRequest = buildStoredRequest(url, amount);
-    // Current implementation returns a deterministic placeholder approval URL from the
-    // encoded request payload. Replace this with production request storage and
-    // wallet-session orchestration when CrawlPay payment backend is connected.
     const approvalLink = buildApprovalLink(storedRequest);
-    console.error("[crawlpay-mcp] Generated approval link successfully");
+    console.error("[crawlpay-mcp] No API key — returning Arc/x402 placeholder link");
     return {
         content: [
             {
                 type: "text",
-                text: "Payment required detected and prepared.\n" +
+                text: "Payment required — set CRAWLPAY_API_KEY=cr_live_… for Base wallet billing,\n" +
+                    "or use Arc x402 headers manually.\n\n" +
                     `Protected URL: ${url}\n` +
                     `Amount: ${amount} USDC\n` +
-                    `Approval link: ${approvalLink}`,
+                    `Placeholder approval link: ${approvalLink}`,
             },
         ],
     };

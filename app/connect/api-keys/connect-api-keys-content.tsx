@@ -300,6 +300,7 @@ function ConnectApiKeysPageContent() {
           name: name.replace(/\s+/g, "_"),
           perReq: pr,
           daily: dl,
+          ownerWalletAddress: walletAddress ?? undefined,
         }),
       });
       if (!res.ok) {

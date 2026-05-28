@@ -4,9 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateSimulatedTxHash } from "@/lib/arc";
 import { getBotName, isAIBot } from "@/lib/detection/bot-detector";
 import {
-  apiKeyTxHash,
   authorizeApiKeyForAmount,
-  commitApiKeyUsage,
+  settleApiKeyPayment,
 } from "@/lib/auth/api-key-access";
 import { getApiKeyTokenFromRequest } from "@/lib/auth/api-key-request";
 import { verifyArcSignature } from "@/lib/payments/gateway";
@@ -121,8 +120,20 @@ export async function GET(req: NextRequest) {
         { status: access.status }
       );
     }
-    await commitApiKeyUsage(access.key, AMOUNT_USDC);
-    tx_hash = apiKeyTxHash(access.key.id);
+    try {
+      const settlement = await settleApiKeyPayment(access, AMOUNT_USDC);
+      tx_hash = settlement.txHash;
+    } catch (err) {
+      return NextResponse.json(
+        {
+          error:
+            err instanceof Error
+              ? err.message
+              : "On-chain settlement failed",
+        },
+        { status: 402 }
+      );
+    }
     apiKeyName = access.key.name;
   } else if (hasCryptoHeaders) {
     const valid = await verifyArcSignature(

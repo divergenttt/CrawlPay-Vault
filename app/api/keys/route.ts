@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       name?: unknown;
       perReq?: unknown;
       daily?: unknown;
+      ownerWalletAddress?: unknown;
     };
 
     const name =
@@ -60,10 +61,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const ownerWalletAddress =
+      typeof body.ownerWalletAddress === "string"
+        ? body.ownerWalletAddress.trim()
+        : undefined;
+
     const created = await createApiKeyForUser(auth.session.userId, {
       name,
       perReqUsdc: perReq,
       dailyUsdc: daily,
+      ownerWalletAddress,
     });
 
     return NextResponse.json({

@@ -134,6 +134,38 @@ export const payForContentAction: Action = {
 
     let responseText = "";
 
+    const apiKey =
+      process.env.CRAWLPAY_API_KEY?.trim() ||
+      process.env.CRAWLPAY_AGENT_API_KEY?.trim();
+
+    if (apiKey?.startsWith("cr_live_") && targetUrl.startsWith("http")) {
+      try {
+        const res = await fetch(targetUrl, {
+          headers: {
+            "User-Agent": "GPTBot (CrawlPay-Eliza/1.0)",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          cache: "no-store",
+        });
+        const body = await res.text();
+        responseText =
+          `CrawlPay API key fetch (${res.status})\n` +
+          `URL: ${targetUrl}\n` +
+          `Amount: ${amount}\n\n` +
+          body.slice(0, 4000);
+        await callback?.({
+          text:
+            `Payment required for protected content.\n` +
+            `URL: ${targetUrl}\n` +
+            `Amount: ${amount}\n` +
+            `\n${responseText}`,
+        });
+        return true;
+      } catch (err) {
+        console.error("[CrawlPay][PAY_FOR_CONTENT] API key fetch failed", err);
+      }
+    }
+
     try {
       const mcpClient = await getMcpClient();
 
