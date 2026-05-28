@@ -10,6 +10,12 @@ import {
   isApiKeyOnchainEnabled,
   settleUsdcFromEmbeddedWallet,
 } from "@/lib/wallet/settle-usdc-on-base";
+import {
+  serverSignerNotConfiguredMessage,
+  walletHasServerSigner,
+  walletMissingServerSignerMessage,
+} from "@/lib/wallet/privy-wallet-signers";
+import { getPrivySignerQuorumId } from "@/lib/wallet/privy-signer-quorum-id";
 import type { NextRequest } from "next/server";
 
 export type ApiKeyAccessResult =
@@ -144,6 +150,15 @@ export async function settleApiKeyPayment(
 
   const walletId = access.privyWalletId;
   if (isApiKeyOnchainEnabled() && walletId && seller) {
+    if (!getPrivySignerQuorumId()) {
+      throw new Error(serverSignerNotConfiguredMessage());
+    }
+
+    const hasSigner = await walletHasServerSigner(access.walletAddress);
+    if (!hasSigner) {
+      throw new Error(walletMissingServerSignerMessage());
+    }
+
     try {
       const { txHash } = await settleUsdcFromEmbeddedWallet({
         walletId,
@@ -154,7 +169,8 @@ export async function settleApiKeyPayment(
       return { txHash, mode: "onchain" };
     } catch (err) {
       console.error("[CrawlPay] On-chain API key settlement failed:", err);
-      throw err;
+      const message = formatOnchainSettlementError(err);
+      throw new Error(message);
     }
   }
 
@@ -167,4 +183,15 @@ export async function settleApiKeyPayment(
 
 export function apiKeyTxHash(keyId: string): string {
   return `apikey_${keyId.replace(/-/g, "").slice(0, 16)}_${Date.now().toString(36)}`;
+}
+
+function formatOnchainSettlementError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  if (raw.includes("No valid authorization keys or user signing keys")) {
+    return walletMissingServerSignerMessage();
+  }
+  if (raw.includes("Missing PRIVY_AUTHORIZATION_PRIVATE_KEY")) {
+    return serverSignerNotConfiguredMessage();
+  }
+  return raw;
 }

@@ -11,6 +11,7 @@ import {
   useSocialLogin,
 } from "@/lib/auth/use-social-login";
 import { DepositWidget } from "@/components/connect/deposit-widget";
+import { OnchainSignerBanner } from "@/components/wallet/onchain-signer-banner";
 import { useArcUsdcBalance } from "@/lib/wallet/use-arc-usdc-balance";
 import { useEmbeddedWalletRef } from "@/lib/wallet/use-embedded-wallet-ref";
 import {
@@ -431,6 +432,8 @@ function ConnectApiKeysPageContent() {
                 onRefreshBalance={() => void refreshBalance()}
               />
             </section>
+
+            <OnchainSignerBanner />
 
             <section className="kx-cta">
               <div>

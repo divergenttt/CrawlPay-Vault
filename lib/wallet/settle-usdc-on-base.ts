@@ -3,6 +3,7 @@ import "server-only";
 import { encodeFunctionData, erc20Abi, parseUnits } from "viem";
 import { base } from "viem/chains";
 import { getPrivyNodeClient } from "./privy-node-client";
+import { getPrivyAuthorizationContext } from "./privy-authorization-context";
 
 const USDC_BASE = (process.env.NEXT_PUBLIC_USDC_BASE?.trim() ||
   "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913") as `0x${string}`;
@@ -41,6 +42,7 @@ export async function settleUsdcFromEmbeddedWallet(params: {
 
   const privy = getPrivyNodeClient();
   const response = await privy.wallets().ethereum().sendTransaction(params.walletId, {
+    authorization_context: getPrivyAuthorizationContext(),
     caip2: "eip155:8453",
     params: {
       transaction: {

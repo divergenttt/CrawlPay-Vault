@@ -3,6 +3,7 @@
 import { PrivyProvider } from "@privy-io/react-auth";
 import { base } from "viem/chains";
 import { AuthUiProvider } from "@/lib/auth/auth-ui-context";
+import { RegisterPrivyServerSigner } from "@/components/wallet/register-privy-server-signer";
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID!;
 
@@ -31,6 +32,7 @@ export function PrivyProviderClient({
         supportedChains: [base],
       }}
     >
+      <RegisterPrivyServerSigner />
       <AuthUiProvider>{children}</AuthUiProvider>
     </PrivyProvider>
   );
