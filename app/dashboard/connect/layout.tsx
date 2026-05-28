@@ -1,5 +1,7 @@
 import { ConnectProviders } from "../../connect-providers";
 
+export const dynamic = "force-dynamic";
+
 export default function DashboardConnectLayout({
   children,
 }: {

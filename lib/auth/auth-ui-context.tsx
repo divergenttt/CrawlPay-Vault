@@ -30,6 +30,28 @@ type AuthUiContextValue = {
 
 const AuthUiContext = createContext<AuthUiContextValue | null>(null);
 
+/** Safe defaults when Privy is not mounted (SSR or missing app id). */
+export const AUTH_UI_STUB: AuthUiContextValue = {
+  ready: false,
+  authenticated: false,
+  isLoggingOut: false,
+  loginPhase: "idle",
+  isSignedIn: false,
+  isAuthPending: false,
+  beginOAuthRedirect: () => undefined,
+  beginOAuthComplete: () => undefined,
+  clearLoginPhase: () => undefined,
+  signOut: () => undefined,
+};
+
+export function AuthUiStubProvider({ children }: { children: ReactNode }) {
+  return (
+    <AuthUiContext.Provider value={AUTH_UI_STUB}>
+      {children}
+    </AuthUiContext.Provider>
+  );
+}
+
 export function AuthUiProvider({ children }: { children: ReactNode }) {
   const { ready, authenticated, user, logout } = usePrivy();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -90,22 +112,5 @@ export function AuthUiProvider({ children }: { children: ReactNode }) {
 
 export function useAuthUi(): AuthUiContextValue {
   const ctx = useContext(AuthUiContext);
-  const privy = usePrivy();
-
-  if (ctx) return ctx;
-
-  return {
-    ready: privy.ready,
-    authenticated: privy.authenticated,
-    isLoggingOut: false,
-    loginPhase: "idle",
-    isSignedIn: privy.authenticated,
-    isAuthPending: false,
-    beginOAuthRedirect: () => undefined,
-    beginOAuthComplete: () => undefined,
-    clearLoginPhase: () => undefined,
-    signOut: () => {
-      void privy.logout();
-    },
-  };
+  return ctx ?? AUTH_UI_STUB;
 }

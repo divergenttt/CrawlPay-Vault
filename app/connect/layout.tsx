@@ -2,6 +2,8 @@ import { ConnectProviders } from "../connect-providers";
 import { PrivyOverlayFix } from "@/components/privy-overlay-fix";
 import { PrivyPreload } from "@/components/privy-preload";
 
+export const dynamic = "force-dynamic";
+
 export default function ConnectLayout({
   children,
 }: {
