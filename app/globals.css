@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -54,7 +54,7 @@ button { cursor: none; font-family: inherit; }
   position: fixed;
   top: 0; left: 0;
   pointer-events: none;
-  z-index: 100000;
+  z-index: 100002;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   transition: width 0.18s ease, height 0.18s ease, border-color 0.18s ease, background 0.18s ease;
@@ -77,13 +77,33 @@ button { cursor: none; font-family: inherit; }
 
 ::selection { background: var(--c-blu); color: #fff; }
 
-/* Privy modal must sit above connect page layers / custom cursor */
-#privy-dialog-backdrop {
-  z-index: 99990 !important;
+/* Privy modal — above custom cursor; keep dialog content sharp */
+#privy-dialog {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100001 !important;
 }
-#privy-dialog,
+
 #privy-modal-content {
-  z-index: 99991 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  isolation: isolate;
+}
+
+#privy-modal-content iframe {
+  filter: none !important;
+}
+
+/* Page layers with backdrop-filter blur Privy UI when stacked — disable while open */
+body.privy-overlay-open .cn-fixed-header,
+body.privy-overlay-open.connect-page .db-header.cn-fixed-header,
+body.privy-overlay-open .nav.scrolled,
+body:has(#privy-dialog-backdrop) .cn-fixed-header,
+body:has(#privy-dialog-backdrop).connect-page .db-header.cn-fixed-header,
+body:has(#privy-dialog-backdrop) .nav.scrolled {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* ============================ NAV ============================ */

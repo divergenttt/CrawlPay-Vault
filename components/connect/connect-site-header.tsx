@@ -9,13 +9,13 @@ import {
 
 type Props = {
   sessionStatus?: SessionStatus;
-  /** Account chip lives in page content (e.g. API keys signed-in strip). */
+  /** Show profile chip when signed in (API keys uses the Session panel instead). */
   showAccountMenu?: boolean;
 };
 
 export function ConnectSiteHeader({
   sessionStatus,
-  showAccountMenu = true,
+  showAccountMenu = false,
 }: Props) {
   return (
     <header className="db-header cn-fixed-header">

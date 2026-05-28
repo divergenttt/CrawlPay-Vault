@@ -217,6 +217,33 @@
   margin-top: 4px;
 }
 
+/* Compact panel variant (API Keys — side-by-side with deposit) */
+.cp-signed-panel {
+  margin: 0;
+  border-color: rgba(74, 240, 168, 0.25);
+  background: rgba(74, 240, 168, 0.06);
+}
+
+.cp-signed-panel .kx-panel-row .cp-signed-banner-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cp-signed-panel .cp-signed-banner-text {
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.cp-signed-panel .cp-signed-banner-hint {
+  font-size: 11px;
+  line-height: 1.45;
+  margin-top: 6px;
+}
+
+.cp-signed-panel .kx-panel-aside .cp-user-chip {
+  max-width: min(220px, 38vw);
+}
+
 .cp-signing-in-banner {
   border-color: rgba(94, 142, 255, 0.35);
   background: rgba(94, 142, 255, 0.08);

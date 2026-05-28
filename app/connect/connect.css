@@ -27,6 +27,21 @@ body.connect-page::after {
 }
 body.connect-page .db-shell { position: relative; z-index: 1; }
 
+/* Privy fund / login modal: avoid nested backdrop-filter on connect shell */
+body.privy-overlay-open.connect-page .db-shell,
+body:has(#privy-dialog-backdrop).connect-page .db-shell {
+  filter: none !important;
+  transform: none !important;
+}
+
+body.privy-overlay-open.connect-page .kx-connect-panel,
+body.privy-overlay-open.connect-page .cp-signed-panel,
+body:has(#privy-dialog-backdrop).connect-page .kx-connect-panel,
+body:has(#privy-dialog-backdrop).connect-page .cp-signed-panel {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 @keyframes cn-bg-drift-a {
   from { transform: translate3d(0, 0, 0) scale(1); }
   to { transform: translate3d(-2.5%, 2%, 0) scale(1.04); }

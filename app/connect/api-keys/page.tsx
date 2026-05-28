@@ -10,6 +10,7 @@ import {
   SOCIAL_PROVIDERS,
   useSocialLogin,
 } from "@/lib/auth/use-social-login";
+import { DepositWidget } from "@/components/connect/deposit-widget";
 import {
   SignedInBanner,
   type SessionStatus,
@@ -347,10 +348,6 @@ function ConnectApiKeysPageContent() {
           </div>
         ) : null}
 
-        {mounted && isSignedIn ? (
-          <SignedInBanner sessionStatus={sessionStatus} />
-        ) : null}
-
         {mounted && !isSignedIn && !ready ? (
           <AuthGateLoading />
         ) : mounted && !isSignedIn ? (
@@ -393,6 +390,14 @@ function ConnectApiKeysPageContent() {
           </section>
         ) : mounted && isSignedIn ? (
           <>
+            <section className="kx-account-row">
+              <SignedInBanner
+                sessionStatus={sessionStatus}
+                variant="panel"
+              />
+              <DepositWidget />
+            </section>
+
             <section className="kx-cta">
               <div>
                 <div className="kx-cta-title">Create a key for your bot</div>

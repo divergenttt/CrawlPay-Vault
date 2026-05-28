@@ -82,7 +82,7 @@ export function UserAccountMenu({
   }
 
   if (!isSignedIn || !profile) {
-    if (variant === "nav" || variant === "connect") {
+    if (variant === "nav") {
       return (
         <Link href={signInHref} className="cp-user-signin" data-page-link>
           Sign in
@@ -156,6 +156,8 @@ export function UserAccountMenu({
 type BannerProps = {
   sessionStatus?: SessionStatus;
   showAccountMenu?: boolean;
+  /** Compact panel for side-by-side layout with deposit widget */
+  variant?: "banner" | "panel";
 };
 
 /** Shown immediately after OAuth redirect while Privy finishes login. */
@@ -189,6 +191,7 @@ export function SigningInBanner() {
 export function SignedInBanner({
   sessionStatus,
   showAccountMenu = true,
+  variant = "banner",
 }: BannerProps) {
   const { user } = usePrivy();
   const { ready, isSignedIn } = useAuthUi();
@@ -200,9 +203,15 @@ export function SignedInBanner({
   const verifying = sessionStatus === "checking";
   const failed = sessionStatus === "unverified";
 
+  const isPanel = variant === "panel";
+
   return (
     <div
-      className="cp-signed-banner"
+      className={
+        isPanel
+          ? "kx-connect-panel cp-signed-panel"
+          : "cp-signed-banner"
+      }
       role="status"
       style={
         failed
@@ -213,28 +222,62 @@ export function SignedInBanner({
           : undefined
       }
     >
-      <div className="cp-signed-banner-body">
-        <p className="cp-signed-banner-text">
-          Signed in as <strong>{profile.displayName}</strong>
-          {verifying ? " — verifying session…" : failed ? "" : " ✓"}
-        </p>
-        {failed ? (
-          <p className="cp-signed-banner-hint">
-            Privy login succeeded, but the server session could not be verified.
-            Try signing out and in again.
+      {isPanel ? <p className="kx-panel-eyebrow">Session</p> : null}
+      {isPanel ? (
+        <div className="kx-panel-body">
+          <div className="kx-panel-row">
+            <div className="cp-signed-banner-body">
+              <p className="cp-signed-banner-text">
+                Signed in as <strong>{profile.displayName}</strong>
+                {verifying ? " — verifying…" : failed ? "" : " ✓"}
+              </p>
+              {failed ? (
+                <p className="cp-signed-banner-hint">
+                  Server session could not be verified. Sign out and try again.
+                </p>
+              ) : verifying ? (
+                <p className="cp-signed-banner-hint">
+                  Confirming your token with the server…
+                </p>
+              ) : (
+                <p className="cp-signed-banner-hint">
+                  API keys unlocked · open profile on the right to sign out
+                </p>
+              )}
+            </div>
+            {showAccountMenu ? (
+              <div className="kx-panel-aside">
+                <UserAccountMenu
+                  variant="connect"
+                  sessionStatus={sessionStatus}
+                />
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : (
+        <div className="cp-signed-banner-body">
+          <p className="cp-signed-banner-text">
+            Signed in as <strong>{profile.displayName}</strong>
+            {verifying ? " — verifying…" : failed ? "" : " ✓"}
           </p>
-        ) : verifying ? (
-          <p className="cp-signed-banner-hint">
-            Confirming your token with the server…
-          </p>
-        ) : (
-          <p className="cp-signed-banner-hint">
-            API key tools are unlocked. Open your profile on the right to sign
-            out.
-          </p>
-        )}
-      </div>
-      {showAccountMenu ? (
+          {failed ? (
+            <p className="cp-signed-banner-hint">
+              Server session could not be verified. Sign out and try again.
+            </p>
+          ) : verifying ? (
+            <p className="cp-signed-banner-hint">
+              Confirming your token with the server…
+            </p>
+          ) : (
+            <p className="cp-signed-banner-hint">
+              API key tools are unlocked. Open your profile on the right to sign
+              out.
+            </p>
+          )}
+        </div>
+      )}
+      {showAccountMenu && !isPanel ? (
         <UserAccountMenu variant="connect" sessionStatus={sessionStatus} />
       ) : null}
     </div>

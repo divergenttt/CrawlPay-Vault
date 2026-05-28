@@ -2,6 +2,176 @@
    Builds on connect.css. Adds the generate-key CTA, keys table, warning.
 ========================================================================= */
 
+/* Signed-in session + wallet top-up (equal-height panels) */
+.kx-account-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 28px;
+}
+
+.kx-connect-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background:
+    radial-gradient(120% 200% at 100% 0%, rgba(94, 142, 255, 0.08), transparent 60%),
+    radial-gradient(120% 200% at 0% 100%, rgba(255, 77, 99, 0.06), transparent 60%),
+    rgba(255, 255, 255, 0.02);
+}
+
+.kx-panel-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+}
+
+.kx-panel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+}
+
+.kx-panel-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.kx-panel-aside {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  align-self: center;
+}
+
+.kx-panel-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.kx-panel-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--white);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.kx-panel-muted {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(245, 245, 247, 0.62);
+  margin-bottom: 0;
+}
+
+.kx-panel-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 100px;
+  padding: 11px 18px;
+  cursor: none;
+  transition: background 0.2s, transform 0.18s, box-shadow 0.28s, border-color 0.18s;
+}
+
+.kx-panel-btn-primary {
+  color: #06060a;
+  background: #fff;
+  border: none;
+  box-shadow:
+    -2px 0 16px rgba(255, 77, 99, 0.28),
+     2px 0 16px rgba(94, 142, 255, 0.28);
+}
+
+.kx-panel-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #f1f1f3;
+}
+
+.kx-panel-btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.kx-panel-error {
+  margin-top: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--c-red);
+}
+
+.kx-deposit-panel .kx-panel-body {
+  align-items: flex-start;
+}
+
+.kx-deposit-address {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.kx-deposit-address code {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--white);
+}
+
+.kx-deposit-copy {
+  flex-shrink: 0;
+  min-width: 84px;
+  box-sizing: border-box;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray);
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: none;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+
+.kx-deposit-copy:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.kx-deposit-copy.is-copied {
+  color: var(--c-grn);
+  border-color: rgba(74, 240, 168, 0.4);
+  background: rgba(74, 240, 168, 0.06);
+}
+
 /* Big generate CTA */
 .kx-cta {
   display: grid;
@@ -479,6 +649,27 @@
   .kx-row { grid-template-columns: 1.6fr 1.2fr 0.7fr 0.4fr; }
   .kx-row .col-status { display: none; }
 }
+@media (max-width: 900px) {
+  .kx-account-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .kx-panel-body {
+    align-items: flex-start;
+  }
+
+  .kx-panel-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .kx-panel-aside {
+    align-self: flex-end;
+  }
+}
+
 @media (max-width: 760px) {
   .kx-cta { grid-template-columns: 1fr; }
   .kx-row { grid-template-columns: 1fr; gap: 12px; padding: 16px 18px; }

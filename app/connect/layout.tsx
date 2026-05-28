@@ -1,4 +1,5 @@
 import { ConnectProviders } from "../connect-providers";
+import { PrivyOverlayFix } from "@/components/privy-overlay-fix";
 import { PrivyPreload } from "@/components/privy-preload";
 
 export default function ConnectLayout({
@@ -9,6 +10,7 @@ export default function ConnectLayout({
   return (
     <ConnectProviders>
       <PrivyPreload />
+      <PrivyOverlayFix />
       {children}
     </ConnectProviders>
   );
