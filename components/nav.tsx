@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import "@/components/auth/user-account-menu.css";
 import { LogoMark } from "@/components/logo-mark";
 import { useScrolled } from "@/lib/hooks";
 
@@ -122,15 +121,6 @@ export function Nav() {
         </div>
       </div>
       <div className="nav-right">
-        <Link
-          href="/connect/api-keys"
-          className="cp-user-signin"
-          data-page-link
-          prefetch
-          onMouseEnter={warmPrivy}
-        >
-          Sign in
-        </Link>
         <Link href="/dashboard" className="nav-cta" data-page-link prefetch>
           Dashboard
         </Link>
