@@ -11,6 +11,8 @@ import {
   useSocialLogin,
 } from "@/lib/auth/use-social-login";
 import { DepositWidget } from "@/components/connect/deposit-widget";
+import { useArcUsdcBalance } from "@/lib/wallet/use-arc-usdc-balance";
+import { useEmbeddedWalletAddress } from "@/lib/wallet/use-embedded-wallet-address";
 import {
   SignedInBanner,
   type SessionStatus,
@@ -175,6 +177,15 @@ function ConnectApiKeysPageContent() {
   const { isSignedIn, ready, serverVerified, sessionChecking } =
     useServerVerifiedSession(setAuthError);
 
+  const walletAddress = useEmbeddedWalletAddress();
+  const {
+    balanceUsdc,
+    loading: balanceLoading,
+    error: balanceError,
+    refresh: refreshBalance,
+    isZero: balanceIsZero,
+  } = useArcUsdcBalance(isSignedIn ? walletAddress : undefined);
+
   useOAuthReturn(setAuthError);
 
   useEffect(() => {
@@ -298,8 +309,15 @@ function ConnectApiKeysPageContent() {
       const fresh = apiKeyToRow(data.key, data.token);
       setRows((prev) => [fresh, ...prev]);
       setJustCreatedId(fresh.id);
-      setToast("New key created · copy it now");
-      setTimeout(() => setToast(null), 2600);
+      const toastMsg =
+        balanceUsdc !== null && balanceUsdc === 0
+          ? "Key created ✓ — top up your balance so your agent can start paying"
+          : "New key created · copy it now";
+      setToast(toastMsg);
+      setTimeout(
+        () => setToast(null),
+        balanceUsdc !== null && balanceUsdc === 0 ? 4200 : 2600
+      );
       setTimeout(() => setJustCreatedId(null), 4500);
       setModalOpen(false);
     } catch (err) {
@@ -322,7 +340,7 @@ function ConnectApiKeysPageContent() {
           <div>
             <div className="cn-eyebrow">
               <span className="pip" style={{ background: "var(--c-blu)", boxShadow: "0 0 8px var(--c-blu)" }} />
-              {rows.filter((r) => r.status === "active").length} active keys · Base mainnet
+              {rows.filter((r) => r.status === "active").length} active keys · Arc Testnet
             </div>
             <h1 className="cn-title cn-title-nowrap">
               A secret PIN <em>for your agents.</em>
@@ -395,7 +413,12 @@ function ConnectApiKeysPageContent() {
                 sessionStatus={sessionStatus}
                 variant="panel"
               />
-              <DepositWidget />
+              <DepositWidget
+                balanceUsdc={balanceUsdc}
+                balanceLoading={balanceLoading}
+                balanceError={balanceError}
+                onRefreshBalance={() => void refreshBalance()}
+              />
             </section>
 
             <section className="kx-cta">
@@ -427,6 +450,25 @@ function ConnectApiKeysPageContent() {
               {keysError ? (
                 <div className="kx-auth-error kx-auth-error-banner" role="alert">
                   {keysError}
+                </div>
+              ) : null}
+
+              {rows.length > 0 && balanceIsZero && !balanceLoading ? (
+                <div className="kx-balance-paused-banner" role="status">
+                  <span className="kx-balance-paused-icon" aria-hidden>
+                    ⚠
+                  </span>
+                  <span>
+                    Your agents are paused — no USDC balance.{" "}
+                    <button
+                      type="button"
+                      className="kx-balance-paused-link"
+                      onClick={() => void refreshBalance()}
+                    >
+                      Top up
+                    </button>{" "}
+                    to resume.
+                  </span>
                 </div>
               ) : null}
 

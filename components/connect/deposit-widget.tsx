@@ -1,15 +1,14 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
-  getEmbeddedConnectedWallet,
   useCreateWallet,
   useFundWallet,
   usePrivy,
-  useWallets,
-  type LinkedAccountWithMetadata,
 } from "@privy-io/react-auth";
 import { base, baseSepolia } from "viem/chains";
+import { formatUsdcBalance } from "@/lib/wallet/arc-usdc";
+import { useEmbeddedWalletAddress } from "@/lib/wallet/use-embedded-wallet-address";
 
 const FUND_CHAIN_ID =
   process.env.NEXT_PUBLIC_FUND_CHAIN_ID === String(base.id)
@@ -20,29 +19,21 @@ function shortAddress(address: string): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
-function embeddedAddressFromUser(
-  linkedAccounts: LinkedAccountWithMetadata[] | undefined
-): string | undefined {
-  if (!linkedAccounts?.length) return undefined;
+type DepositWidgetProps = {
+  balanceUsdc: number | null;
+  balanceLoading?: boolean;
+  balanceError?: string | null;
+  onRefreshBalance?: () => void;
+};
 
-  for (const account of linkedAccounts) {
-    if (
-      account.type === "wallet" &&
-      "walletClientType" in account &&
-      account.walletClientType === "privy" &&
-      "address" in account &&
-      typeof account.address === "string"
-    ) {
-      return account.address;
-    }
-  }
-
-  return undefined;
-}
-
-export function DepositWidget() {
-  const { user, ready } = usePrivy();
-  const { wallets } = useWallets();
+export function DepositWidget({
+  balanceUsdc,
+  balanceLoading = false,
+  balanceError = null,
+  onRefreshBalance,
+}: DepositWidgetProps) {
+  const { ready } = usePrivy();
+  const walletAddress = useEmbeddedWalletAddress();
   const { fundWallet } = useFundWallet();
   const { createWallet } = useCreateWallet();
   const [copied, setCopied] = useState(false);
@@ -50,14 +41,6 @@ export function DepositWidget() {
   const [funding, setFunding] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const walletAddress = useMemo(() => {
-    const fromLinked = embeddedAddressFromUser(user?.linkedAccounts);
-    if (fromLinked) return fromLinked;
-
-    const embedded = getEmbeddedConnectedWallet(wallets);
-    return embedded?.address;
-  }, [user?.linkedAccounts, wallets]);
 
   const copyAddress = useCallback(async () => {
     if (!walletAddress || !navigator.clipboard) return;
@@ -77,12 +60,13 @@ export function DepositWidget() {
     setError(null);
     try {
       await createWallet();
+      onRefreshBalance?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create wallet.");
     } finally {
       setCreating(false);
     }
-  }, [createWallet]);
+  }, [createWallet, onRefreshBalance]);
 
   const onTopUp = useCallback(async () => {
     if (!walletAddress) return;
@@ -99,8 +83,15 @@ export function DepositWidget() {
       setError(err instanceof Error ? err.message : "Funding flow failed.");
     } finally {
       setFunding(false);
+      onRefreshBalance?.();
     }
-  }, [fundWallet, walletAddress]);
+  }, [fundWallet, onRefreshBalance, walletAddress]);
+
+  const showZeroHint =
+    walletAddress &&
+    balanceUsdc !== null &&
+    balanceUsdc === 0 &&
+    !balanceLoading;
 
   const headAction =
     !ready ? null : !walletAddress ? (
@@ -139,9 +130,26 @@ export function DepositWidget() {
               </p>
             ) : (
               <>
-                <p className="kx-panel-muted">
-                  Add USDC via Privy — card, transfer, or crypto deposit.
+                <p className="kx-wallet-balance">
+                  Balance:{" "}
+                  <strong>
+                    {balanceLoading && balanceUsdc === null
+                      ? "…"
+                      : balanceError
+                        ? "—"
+                        : `${formatUsdcBalance(balanceUsdc ?? 0)} USDC`}
+                  </strong>
                 </p>
+                {showZeroHint ? (
+                  <p className="kx-panel-muted kx-panel-warn">
+                    Top up to activate your agents
+                  </p>
+                ) : (
+                  <p className="kx-panel-muted">
+                    Agent payments use USDC on Arc Testnet. Top up via Privy
+                    (card, transfer, or crypto).
+                  </p>
+                )}
                 <div className="kx-deposit-address">
                   <code>{shortAddress(walletAddress)}</code>
                   <button
@@ -161,6 +169,11 @@ export function DepositWidget() {
             {error ? (
               <p className="kx-panel-error" role="alert">
                 {error}
+              </p>
+            ) : null}
+            {balanceError && walletAddress ? (
+              <p className="kx-panel-error" role="alert">
+                {balanceError}
               </p>
             ) : null}
           </div>
