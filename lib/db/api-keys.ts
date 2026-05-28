@@ -2,7 +2,10 @@ import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
 import { supabase } from "@/lib/payments/supabase";
-import { fetchEmbeddedWalletForPrivyUser } from "@/lib/wallet/privy-user-wallet";
+import {
+  fetchEmbeddedWalletForPrivyUser,
+  fetchEmbeddedWalletFromIdentityToken,
+} from "@/lib/wallet/privy-user-wallet";
 
 export type ApiKeyStatus = "active" | "paused" | "revoked";
 
@@ -94,6 +97,8 @@ export type CreateApiKeyInput = {
   dailyUsdc: number;
   ownerWalletAddress?: string;
   privyWalletId?: string;
+  /** Privy identity token cookie — resolves wallet without REST app secret. */
+  identityToken?: string;
 };
 
 export async function updateApiKeyWallet(
@@ -115,14 +120,30 @@ export async function createApiKeyForUser(
   privyUserId: string,
   input: CreateApiKeyInput
 ): Promise<{ row: ApiKeyPublic; token: string }> {
-  const wallet = await fetchEmbeddedWalletForPrivyUser(privyUserId);
+  const clientAddress = input.ownerWalletAddress?.trim();
+  const clientWalletId = input.privyWalletId?.trim();
+  const walletOptions = {
+    hintAddress: clientAddress,
+    hintWalletId: clientWalletId,
+  };
+
+  const wallet =
+    (input.identityToken
+      ? await fetchEmbeddedWalletFromIdentityToken(
+          input.identityToken,
+          walletOptions
+        )
+      : null) ??
+    (await fetchEmbeddedWalletForPrivyUser(privyUserId, walletOptions));
+
   if (!wallet) {
     throw new Error(
-      "No embedded wallet linked to this account. Sign in and create a wallet before creating API keys."
+      clientAddress
+        ? "Could not resolve your embedded wallet. In Privy Dashboard copy a new App Secret into PRIVY_APP_SECRET in .env.local, restart npm run dev, and try again."
+        : "No embedded wallet linked to this account. Sign in and create a wallet before creating API keys."
     );
   }
 
-  const clientAddress = input.ownerWalletAddress?.trim();
   if (
     clientAddress &&
     clientAddress.toLowerCase() !== wallet.address.toLowerCase()

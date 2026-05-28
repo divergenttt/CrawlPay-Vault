@@ -12,7 +12,7 @@ import {
 } from "@/lib/auth/use-social-login";
 import { DepositWidget } from "@/components/connect/deposit-widget";
 import { useArcUsdcBalance } from "@/lib/wallet/use-arc-usdc-balance";
-import { useEmbeddedWalletAddress } from "@/lib/wallet/use-embedded-wallet-address";
+import { useEmbeddedWalletRef } from "@/lib/wallet/use-embedded-wallet-ref";
 import {
   SignedInBanner,
   type SessionStatus,
@@ -177,7 +177,8 @@ function ConnectApiKeysPageContent() {
   const { isSignedIn, ready, serverVerified, sessionChecking } =
     useServerVerifiedSession(setAuthError);
 
-  const walletAddress = useEmbeddedWalletAddress();
+  const embeddedWallet = useEmbeddedWalletRef();
+  const walletAddress = embeddedWallet?.address;
   const {
     balanceUsdc,
     loading: balanceLoading,
@@ -290,7 +291,11 @@ function ConnectApiKeysPageContent() {
     if (Number.isNaN(pr) || pr <= 0) return setFError("Max per request must be a positive number.");
     if (Number.isNaN(dl) || dl <= 0) return setFError("Daily limit must be a positive number.");
     if (dl < pr) return setFError("Daily limit cannot be less than per-request limit.");
-
+    if (!walletAddress) {
+      return setFError(
+        "Embedded wallet is still loading. Wait a moment and try again."
+      );
+    }
     setFError("");
     try {
       const res = await authFetch("/api/keys", {
@@ -300,7 +305,8 @@ function ConnectApiKeysPageContent() {
           name: name.replace(/\s+/g, "_"),
           perReq: pr,
           daily: dl,
-          ownerWalletAddress: walletAddress ?? undefined,
+          ownerWalletAddress: walletAddress,
+          privyWalletId: embeddedWallet?.walletId,
         }),
       });
       if (!res.ok) {

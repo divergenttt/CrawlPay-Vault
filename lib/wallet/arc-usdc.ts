@@ -10,11 +10,9 @@ import { base, baseSepolia } from "viem/chains";
 const FUND_CHAIN_ID = Number(process.env.NEXT_PUBLIC_FUND_CHAIN_ID || base.id);
 
 const RPC =
-  process.env.NEXT_PUBLIC_RPC?.trim() ||
   process.env.NEXT_PUBLIC_RPC_BASE?.trim() ||
-  (FUND_CHAIN_ID === base.id
-    ? "https://mainnet.base.org"
-    : "https://sepolia.base.org");
+  process.env.NEXT_PUBLIC_RPC?.trim() ||
+  "https://mainnet.base.org";
 
 /** USDC on Base (mainnet or Sepolia via env). */
 const USDC_ADDRESS = (

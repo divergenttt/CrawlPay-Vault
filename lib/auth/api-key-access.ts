@@ -21,7 +21,9 @@ async function ensureKeyWallet(key: ApiKeyRow): Promise<ApiKeyRow> {
   const walletId = key.privy_wallet_id?.trim();
   if (address && walletId) return key;
 
-  const wallet = await fetchEmbeddedWalletForPrivyUser(key.privy_user_id);
+  const wallet = await fetchEmbeddedWalletForPrivyUser(key.privy_user_id, {
+    hintAddress: address,
+  });
   if (!wallet) {
     throw new Error(
       "No embedded wallet linked to this account. Sign in and create a wallet before using API keys."

@@ -90,6 +90,17 @@ const PRIVY_TOKEN_COOKIE_NAMES = [
   "privy-access-token",
 ] as const;
 
+const PRIVY_IDENTITY_COOKIE_NAMES = ["privy-id-token", "privy-identity-token"] as const;
+
+/** Privy identity token (JWT with linked_accounts) — verified via JWKS, not app secret. */
+export function getIdentityTokenFromRequest(req: NextRequest): string | null {
+  for (const name of PRIVY_IDENTITY_COOKIE_NAMES) {
+    const token = req.cookies.get(name)?.value?.trim();
+    if (token) return token;
+  }
+  return null;
+}
+
 /** Bearer header or Privy session cookie (cookie name varies by SDK version). */
 export function getAccessTokenFromRequest(req: NextRequest): string | null {
   const authorization = req.headers.get("authorization");

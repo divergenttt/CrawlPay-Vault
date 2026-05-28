@@ -4,6 +4,7 @@ import {
   listApiKeysForUser,
 } from "@/lib/db/api-keys";
 import { requirePrivyAuth } from "@/lib/auth/require-auth";
+import { getIdentityTokenFromRequest } from "@/lib/auth/privy-server";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest) {
       perReq?: unknown;
       daily?: unknown;
       ownerWalletAddress?: unknown;
+      privyWalletId?: unknown;
     };
 
     const name =
@@ -66,11 +68,18 @@ export async function POST(req: NextRequest) {
         ? body.ownerWalletAddress.trim()
         : undefined;
 
+    const privyWalletId =
+      typeof body.privyWalletId === "string" ? body.privyWalletId.trim() : undefined;
+
+    const identityToken = getIdentityTokenFromRequest(req);
+
     const created = await createApiKeyForUser(auth.session.userId, {
       name,
       perReqUsdc: perReq,
       dailyUsdc: daily,
       ownerWalletAddress,
+      privyWalletId,
+      identityToken: identityToken ?? undefined,
     });
 
     return NextResponse.json({
