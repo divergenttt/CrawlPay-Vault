@@ -1,13 +1,21 @@
 import dynamic from "next/dynamic";
+import "../api-keys.css";
 
 function ApiKeysLoading() {
   return (
     <main className="db-shell">
       <div
-        className="flex min-h-[40vh] items-center justify-center"
-        style={{ color: "var(--gray)" }}
+        style={{
+          minHeight: "50vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--gray)",
+          fontFamily: "var(--font-dm-sans, sans-serif)",
+          fontSize: "14px",
+        }}
       >
-        Loading…
+        Loading API Keys…
       </div>
     </main>
   );

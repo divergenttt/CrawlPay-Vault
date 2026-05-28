@@ -5,12 +5,31 @@ import { AuthUiStubProvider } from "@/lib/auth/auth-ui-context";
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 
+function PrivyBootLoading() {
+  return (
+    <div
+      className="db-shell"
+      style={{
+        minHeight: "50vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--gray)",
+        fontFamily: "var(--font-dm-sans, sans-serif)",
+        fontSize: "14px",
+      }}
+    >
+      Loading…
+    </div>
+  );
+}
+
 const PrivyProviderClient = dynamic(
   () =>
     import("./privy-provider-client").then((m) => m.PrivyProviderClient),
   {
     ssr: false,
-    loading: () => null,
+    loading: () => <PrivyBootLoading />,
   }
 );
 

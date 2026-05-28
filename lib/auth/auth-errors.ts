@@ -1,3 +1,5 @@
+import { formatPrivyOriginBlockedMessage } from "@/lib/auth/privy-origin-hint";
+
 /** Shared Privy / OAuth error copy for hooks and URL parsing. */
 export function formatSocialLoginError(error: unknown): string | null {
   const message =
@@ -28,8 +30,8 @@ export function formatSocialLoginError(error: unknown): string | null {
 
   if (lower.includes("authentication failed")) {
     return [
-      "Privy could not finish sign-in (often embedded wallet on Base Sepolia).",
-      "Privy Dashboard → Embedded wallets → Ethereum + Base Sepolia enabled.",
+      "Privy could not finish sign-in (often embedded wallet on Base).",
+      "Privy Dashboard → Embedded wallets → Ethereum + Base mainnet enabled.",
       "Privy Dashboard → Allowed domains → http://localhost:3000",
     ].join("\n");
   }
@@ -40,6 +42,14 @@ export function formatSocialLoginError(error: unknown): string | null {
       "Check your connection, VPN/ad-blocker, and that NEXT_PUBLIC_PRIVY_APP_ID is set.",
       "Privy Dashboard → Allowed domains must include this site (e.g. http://localhost:3000).",
     ].join("\n");
+  }
+
+  if (
+    lower.includes("origin not allowed") ||
+    lower.includes("origin_not") ||
+    lower.includes("origin is not allowed")
+  ) {
+    return formatPrivyOriginBlockedMessage();
   }
 
   if (lower.includes("not allowed")) {
@@ -54,7 +64,7 @@ export function formatSocialLoginError(error: unknown): string | null {
       "Privy could not complete OAuth exchange.",
       "Try again — do not refresh while returning from Google.",
       "Privy Dashboard → Allowed domains → http://localhost:3000",
-      "Privy Dashboard → Embedded wallets → Ethereum + Base Sepolia enabled.",
+      "Privy Dashboard → Embedded wallets → Ethereum + Base mainnet enabled.",
       "Google redirect URI: https://auth.privy.io/api/v1/oauth/callback",
     ].join("\n");
   }

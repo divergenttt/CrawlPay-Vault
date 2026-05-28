@@ -113,7 +113,7 @@ function LockScreen({
           className="mb-8 text-sm leading-relaxed"
           style={{ color: VAULT.muted }}
         >
-          Sign in with Google, GitHub, Telegram, or X to open your embedded workspace on Base Sepolia.
+          Sign in with Google, GitHub, Telegram, or X to open your embedded workspace on Base mainnet.
           Your autonomous agents get API keys without any Web3 setup.
         </p>
         <SocialAuthButtons

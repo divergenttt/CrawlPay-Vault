@@ -1,7 +1,7 @@
 "use client";
 
 import { PrivyProvider } from "@privy-io/react-auth";
-import { base, baseSepolia } from "viem/chains";
+import { base } from "viem/chains";
 import { AuthUiProvider } from "@/lib/auth/auth-ui-context";
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID!;
@@ -24,11 +24,11 @@ export function PrivyProviderClient({
         loginMethods: ["google", "github", "telegram", "twitter"],
         embeddedWallets: {
           ethereum: {
-            createOnLogin: "off",
+            createOnLogin: "users-without-wallets",
           },
         },
-        defaultChain: baseSepolia,
-        supportedChains: [baseSepolia, base],
+        defaultChain: base,
+        supportedChains: [base],
       }}
     >
       <AuthUiProvider>{children}</AuthUiProvider>

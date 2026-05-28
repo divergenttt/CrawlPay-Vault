@@ -34,7 +34,9 @@ export function useEmbeddedWalletAddress(): string | undefined {
 
   return useMemo(() => {
     const fromLinked = embeddedAddressFromUser(user?.linkedAccounts);
-    if (fromLinked) return fromLinked;
+    if (fromLinked) {
+      return fromLinked;
+    }
 
     const embedded = getEmbeddedConnectedWallet(wallets);
     return embedded?.address;

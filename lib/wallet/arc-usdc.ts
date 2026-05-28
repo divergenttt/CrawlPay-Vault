@@ -1,29 +1,61 @@
-import { createPublicClient, erc20Abi, formatUnits, http, type Address } from "viem";
+import {
+  createPublicClient,
+  erc20Abi,
+  formatUnits,
+  http,
+  type Address,
+} from "viem";
+import { base, baseSepolia } from "viem/chains";
 
-const ARC_RPC =
-  process.env.NEXT_PUBLIC_RPC?.trim() || "https://rpc.testnet.arc.network";
+const FUND_CHAIN_ID = Number(process.env.NEXT_PUBLIC_FUND_CHAIN_ID || base.id);
 
+const RPC =
+  process.env.NEXT_PUBLIC_RPC?.trim() ||
+  process.env.NEXT_PUBLIC_RPC_BASE?.trim() ||
+  (FUND_CHAIN_ID === base.id
+    ? "https://mainnet.base.org"
+    : "https://sepolia.base.org");
+
+/** USDC on Base (mainnet or Sepolia via env). */
 const USDC_ADDRESS = (
+  process.env.NEXT_PUBLIC_USDC_BASE?.trim() ||
   process.env.NEXT_PUBLIC_USDC?.trim() ||
-  process.env.USDC_CONTRACT_ADDRESS?.trim() ||
-  "0x3600000000000000000000000000000000000000"
+  (FUND_CHAIN_ID === base.id
+    ? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    : "0x036CbD53842c542663c958E1727696A1bc3994dd")
 ) as Address;
 
+const chain = FUND_CHAIN_ID === base.id ? base : baseSepolia;
+
 const publicClient = createPublicClient({
-  transport: http(ARC_RPC),
+  chain,
+  transport: http(RPC, {
+    timeout: 25_000,
+    retryCount: 2,
+    retryDelay: 500,
+  }),
 });
 
-export async function fetchArcUsdcBalance(
-  walletAddress: string
-): Promise<number> {
-  const raw = await publicClient.readContract({
+async function readBalanceOnce(walletAddress: string): Promise<bigint> {
+  return publicClient.readContract({
     address: USDC_ADDRESS,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: [walletAddress as Address],
   });
+}
 
-  return parseFloat(formatUnits(raw, 6));
+export async function fetchArcUsdcBalance(
+  walletAddress: string
+): Promise<number> {
+  try {
+    const raw = await readBalanceOnce(walletAddress);
+    return parseFloat(formatUnits(raw, 6));
+  } catch {
+    await new Promise((r) => setTimeout(r, 800));
+    const raw = await readBalanceOnce(walletAddress);
+    return parseFloat(formatUnits(raw, 6));
+  }
 }
 
 export function formatUsdcBalance(amount: number): string {

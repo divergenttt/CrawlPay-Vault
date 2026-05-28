@@ -78,6 +78,64 @@
   margin-bottom: 0;
 }
 
+.kx-panel-muted.kx-panel-warn {
+  color: rgba(255, 184, 108, 0.88);
+}
+
+.kx-wallet-balance {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(245, 245, 247, 0.78);
+  margin-bottom: 6px;
+}
+
+.kx-wallet-balance strong {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  font-feature-settings: 'tnum' 1;
+}
+
+.kx-balance-paused-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 184, 108, 0.28);
+  background: rgba(255, 184, 108, 0.06);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(245, 245, 247, 0.78);
+}
+
+.kx-balance-paused-icon {
+  flex-shrink: 0;
+  color: #ffb86c;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.kx-balance-paused-link {
+  font: inherit;
+  color: #ffb86c;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: none;
+}
+
+.kx-balance-paused-link:hover {
+  color: #ffd28a;
+}
+
 .kx-panel-btn {
   font-family: 'DM Mono', monospace;
   font-size: 11px;

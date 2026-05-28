@@ -59,6 +59,19 @@ export function toPublicKey(row: ApiKeyRow): ApiKeyPublic {
   };
 }
 
+export async function findApiKeyByToken(token: string): Promise<ApiKeyRow | null> {
+  if (!token.startsWith("cr_live_")) return null;
+
+  const { data, error } = await supabase
+    .from("api_keys")
+    .select("*")
+    .eq("token_hash", hashApiToken(token))
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ? (data as ApiKeyRow) : null;
+}
+
 export async function listApiKeysForUser(
   privyUserId: string
 ): Promise<ApiKeyPublic[]> {

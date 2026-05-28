@@ -2,33 +2,25 @@
 
 > AI bots read your site for free. Not anymore.
 
-**[Live Demo](crawl-pay.com) · [Dashboard]([https://crawl-pay.vercel.app/dashboard]) · [SDK](https://github.com/divergenttt/CrawlPay-SDK) · MIT License**
+**[crawl-pay.com](https://crawl-pay.com) · [Dashboard](https://crawl-pay.com/dashboard) · [SDK](https://github.com/divergenttt/CrawlPay-Vault-SDK) · MIT License**
 
 ---
 
 ## The Problem
 
-AI Bot crawl your site thousands of times a day. They read your articles, your docs, your content. They train models on it. And they pay you nothing.
+GPTBot, ClaudeBot, PerplexityBot — they crawl your site constantly. They read your articles, your docs, your research, and train models on all of it. You built that content. You get nothing back.
 
-Cloudflare noticed this too. They started testing pay-per-crawl for AI bots - but only for Enterprise customers. Regular developers, bloggers, indie site owners? No option.
+Cloudflare noticed this too and started testing pay-per-crawl — but only for Enterprise customers. Regular developers, bloggers, indie site owners? No option.
 
 That's what CrawlPay is for.
-
----
-
-## What's New in This Version
-
-This repository extends the original CrawlPay with two new layers:
-
-**CDR Vaults** - private encrypted content via Story Protocol. Instead of just gating public pages, bots can now pay to access genuinely private datasets stored in on-chain vaults. The content is cryptographically locked until payment clears.
-
-**Exa Integration** - a working demo of the full autonomous payment loop. An AI agent uses Exa to search the web, finds CrawlPay-protected URLs, and pays for each one - no API keys, no human involvement, zero accounts.
 
 ---
 
 ## How It Works
 
 ### Standard Mode
+
+A bot visits your page and gets an HTTP 402 response. It signs a payment authorization, Arc settles $0.001 USDC in under a second, and the content is delivered. Your dashboard updates in real time.
 
 ```
 Bot → GET /api/page
@@ -37,11 +29,11 @@ Bot → GET /api/page
 Bot → GET /api/page + payment-signature
 Server → verifySignature → savePayment → Supabase
     ← 200 + content
-
-Dashboard updates in real-time
 ```
 
 ### Vault Mode (Story CDR)
+
+Standard mode gates public pages. Vault mode goes further — content that doesn't exist in plaintext anywhere. Datasets stored in Story Protocol CDR vaults, cryptographically locked until payment clears.
 
 ```
 Bot → GET /api/page + X-CrawlPay-Vault: {uuid}
@@ -49,19 +41,17 @@ Bot → GET /api/page + X-CrawlPay-Vault: {uuid}
 
 Bot → GET /api/page + payment-signature
 Server → verifySignature → CDR.accessVault(uuid)
-Story Protocol → threshold decryption → private content
+Story Protocol → TDH2 threshold decryption → private content
     ← 200 + decrypted dataset
 ```
 
-The difference: standard mode gates public pages. Vault mode delivers content that doesn't exist anywhere in plaintext - it's encrypted at rest and only decrypts after verified payment.
+The payment is the access condition. No trusted middleman needed.
 
 ---
 
-## Exa + CrawlPay: Full Autonomous Stack
+## Exa + CrawlPay: Full Autonomous Loop
 
-[Exa](https://exa.ai) is a search API built for AI agents. They also support x402 natively - agents pay per search with USDC, no API key needed.
-
-Put them together:
+[Exa](https://exa.ai) is a search API built for AI agents with native x402 support — same protocol as CrawlPay.
 
 ```
 Agent → Exa search ($0.007 USDC, Base network)
@@ -71,9 +61,7 @@ Agent → CrawlPay ($0.001 USDC, Arc network)
      ← content, no accounts, no keys, no humans
 ```
 
-This is what the agentic web looks like. Two independent payment layers, both x402, both USDC, zero human involvement end to end.
-
-Run the demo:
+Two independent payment layers, two networks, zero human involvement end to end. This is the economic infrastructure for the agentic web.
 
 ```bash
 npx tsx scripts/exa-crawlpay-agent.ts "AI payment infrastructure x402"
@@ -83,13 +71,13 @@ npx tsx scripts/exa-crawlpay-agent.ts "AI payment infrastructure x402"
 
 ## Why Arc
 
-|                          | Ethereum  | Arc         |
-|--------------------------|-----------|-------------|
-| Gas per transaction      | ~$0.50    | ~$0.000006  |
-| Settlement time          | 12 seconds| < 1 second  |
-| Viable for $0.001 payments | ❌      | ✅          |
+| | Ethereum | Arc |
+|---|---|---|
+| Gas per transaction | ~$0.50 | ~$0.000006 |
+| Settlement time | 12 seconds | < 1 second |
+| Viable for $0.001 payments | ❌ | ✅ |
 
-On Ethereum, gas costs more than the payment itself. Arc makes $0.001 per crawl actually work.
+On Ethereum, gas costs more than the payment itself. Arc makes $0.001 per crawl economically viable.
 
 ---
 
@@ -102,7 +90,9 @@ On Ethereum, gas costs more than the payment itself. Arc makes $0.001 per crawl 
 | Private data | Story Protocol CDR |
 | File storage | IPFS via Pinata |
 | Search layer | Exa (x402 native) |
+| Agent framework | ElizaOS plugin |
 | Database | Supabase |
+| Auth | Privy |
 | Frontend | Next.js 14, TypeScript |
 | Deploy | Vercel |
 
@@ -110,37 +100,7 @@ On Ethereum, gas costs more than the payment itself. Arc makes $0.001 per crawl 
 
 ## Supported AI Bots
 
-· GPTBot 
-· ChatGPT-User 
-· ClaudeBot 
-· anthropic-ai 
-· PerplexityBot 
-· GoogleOther 
-· Google-Extended 
-· CCBot 
-· Bytespider 
-· FacebookBot 
-· Applebot-Extended
-
----
-
-## Environment Variables
-
-Copy `.env.local` from your secrets store. Key variables:
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `STORY_PRIVATE_KEY` | For CDR vaults | Story Aeneid wallet private key |
-| `STORY_RPC_URL` | No | Story EVM RPC (default: `https://aeneid.storyrpc.io`) |
-| `STORY_API_URL` | No | Story-API REST endpoint for CDR DKG state ([CDR runtime config](https://docs.story.foundation/developers/cdr-sdk/advanced-configuration); default: `https://api.story.foundation`). On Aeneid, if the default is unreachable, set to the shared testnet Story-API URL from the docs. |
-| `PINATA_JWT` | For vault uploads | Pinata API token for IPFS |
-| `CRAWLPAY_VAULT_UUID` | For vault demo | Vault UUID to serve via `/api/page` |
-| `NEXT_PUBLIC_PRIVY_APP_ID` | Auth | Privy app ID (Connect + dashboard sign-in) |
-| `PRIVY_APP_SECRET` | Auth | Server-side Privy JWT verification |
-| `API_KEY_HASH_SECRET` | Recommended | Pepper for hashing API key tokens (falls back to `PRIVY_APP_SECRET`) |
-| `DASHBOARD_ALLOWED_PRIVY_USER_IDS` | Optional | Comma-separated Privy user IDs allowed on `/dashboard` APIs; if unset, any signed-in user |
-
-Apply `supabase/migrations/20260527000000_auth_tables.sql` for `api_keys`, `vault_ownership`, and `auth_rate_limits`.
+`GPTBot` · `ChatGPT-User` · `ClaudeBot` · `anthropic-ai` · `PerplexityBot` · `GoogleOther` · `Google-Extended` · `CCBot` · `Bytespider` · `FacebookBot` · `Applebot-Extended`
 
 ---
 
@@ -156,11 +116,32 @@ npx ts-node scripts/deposit.ts balance    # check Circle Gateway balance
 
 ---
 
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `STORY_PRIVATE_KEY` | CDR vaults | Story Aeneid wallet private key |
+| `STORY_API_URL` | No | Story-API REST endpoint (default: testnet node) |
+| `PINATA_JWT` | Vault uploads | Pinata API token for IPFS |
+| `PINATA_GATEWAY` | Vault downloads | Your dedicated Pinata gateway host |
+| `CRAWLPAY_VAULT_UUID` | Vault demo | Vault UUID served via `/api/page` |
+| `NEXT_PUBLIC_PRIVY_APP_ID` | Auth | Privy app ID |
+| `PRIVY_APP_SECRET` | Auth | Server-side Privy JWT verification |
+
+Run SQL migrations in order:
+
+1. `supabase/migrations/20260527000000_auth_tables.sql` — `api_keys`, `vault_ownership`, `auth_rate_limits`
+2. `supabase/migrations/20260528120000_api_key_usage.sql` — daily spend limits for agent API keys
+
+Agents can access paid content with `Authorization: Bearer cr_live_…` on `GET /api/page` (bot User-Agent required). Limits come from the key’s per-request and daily USDC caps.
+
+---
+
 ## Live Stats
 
-- **2418+ transactions** on Arc Testnet
+- **2430+ transactions** on Arc Testnet
 - **11 unique bot types** detected and charged
-- **Real-time dashboard** - stats refresh every 30s, payments every 5s
+- **Real-time dashboard** — Supabase Realtime + polling
 - **Gateway balance** display alongside payment history
 
 ---
@@ -171,30 +152,34 @@ npx ts-node scripts/deposit.ts balance    # check Circle Gateway balance
 - [x] Bot detection (11 AI crawlers)
 - [x] HTTP 402 + x402 protocol
 - [x] Circle Nanopayments on Arc Testnet
-- [x] Real-time dashboard with aggregate stats
+- [x] Real-time dashboard with Supabase Realtime
 - [x] CDR vault integration (Story Protocol)
-- [x] Exa autonomous agent demo
-- [x] Paginated payments API
-- [x] Modular architecture (arc/cdr/payments/detection)
+- [x] Exa autonomous agent demo (live API)
+- [x] Dynamic pricing per path
+- [x] Express + Cloudflare Workers SDK adapters
+- [x] ElizaOS plugin + MCP server
+- [x] Privy auth (Google, Twitter, GitHub, Telegram)
+- [x] Modular architecture (arc / cdr / payments / detection)
 
 **Next**
+- [ ] npm publish `@crawlpay/sdk`
 - [ ] Arc Mainnet
-- [ ] Express/Fastify/Cloudflare Workers SDK adapters
-- [ ] npm publish as `@crawlpay/sdk`
-- [ ] Exa real API integration (replace simulated search)
-- [ ] Platform fee (5–10% per transaction)
+- [ ] Tempo, Arbitrum, Solana networks 
+- [ ] The Graph subgraph
+- [ ] Ghost CMS + WordPress plugins
+- [ ] crawlpay.json open standard
 
 ---
 
 ## Links
 
-- 🌐 [Live Demo](https://crawl-pay.vercel.app)
-- 📊 [Dashboard](https://crawl-pay.vercel.app/dashboard)
-- 📦 [CrawlPay SDK](https://github.com/divergenttt/CrawlPay-SDK)
+- 🌐 [crawl-pay.com](https://crawl-pay.com)
+- 📊 [Dashboard](https://crawl-pay.com/dashboard)
+- 📦 [SDK](https://github.com/divergenttt/CrawlPay-Vault-SDK)
 - 🔍 [Arc Testnet Explorer](https://testnet.arcscan.app)
 - 📖 [Story CDR Docs](https://docs.story.foundation/developers/cdr-sdk/overview)
 - 🔎 [Exa x402 Guide](https://exa.ai/docs/reference/x402-guide)
 
 ---
 
-*Built on Arc · Story Protocol · Exa · Circle Nanopayments*
+*Built on Arc · Circle · Story Protocol · Exa · ElizaOS*

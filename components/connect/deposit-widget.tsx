@@ -6,14 +6,11 @@ import {
   useFundWallet,
   usePrivy,
 } from "@privy-io/react-auth";
-import { base, baseSepolia } from "viem/chains";
+import { base } from "viem/chains";
 import { formatUsdcBalance } from "@/lib/wallet/arc-usdc";
 import { useEmbeddedWalletAddress } from "@/lib/wallet/use-embedded-wallet-address";
 
-const FUND_CHAIN_ID =
-  process.env.NEXT_PUBLIC_FUND_CHAIN_ID === String(base.id)
-    ? base.id
-    : baseSepolia.id;
+const FUND_CHAIN_ID = Number(process.env.NEXT_PUBLIC_FUND_CHAIN_ID || base.id);
 
 function shortAddress(address: string): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
@@ -88,10 +85,7 @@ export function DepositWidget({
   }, [fundWallet, onRefreshBalance, walletAddress]);
 
   const showZeroHint =
-    walletAddress &&
-    balanceUsdc !== null &&
-    balanceUsdc === 0 &&
-    !balanceLoading;
+    walletAddress && balanceUsdc !== null && balanceUsdc === 0;
 
   const headAction =
     !ready ? null : !walletAddress ? (
@@ -100,6 +94,7 @@ export function DepositWidget({
         disabled={creating}
         onClick={() => void onCreateWallet()}
         className="kx-panel-btn kx-panel-btn-primary"
+        title="Wallet is created on sign-in; use if it did not appear"
       >
         {creating ? "Creating…" : "Create wallet"}
       </button>
@@ -126,7 +121,8 @@ export function DepositWidget({
               <p className="kx-panel-muted">Loading wallet…</p>
             ) : !walletAddress ? (
               <p className="kx-panel-muted">
-                Create an embedded wallet to fund agent spending on-chain.
+                Setting up your embedded wallet on Base mainnet… If this takes
+                more than a few seconds, use Create wallet on the right.
               </p>
             ) : (
               <>
@@ -146,7 +142,7 @@ export function DepositWidget({
                   </p>
                 ) : (
                   <p className="kx-panel-muted">
-                    Agent payments use USDC on Arc Testnet. Top up via Privy
+                    Agent payments use USDC on Base mainnet. Top up via Privy
                     (card, transfer, or crypto).
                   </p>
                 )}
@@ -171,7 +167,7 @@ export function DepositWidget({
                 {error}
               </p>
             ) : null}
-            {balanceError && walletAddress ? (
+            {balanceError && walletAddress && balanceUsdc === null ? (
               <p className="kx-panel-error" role="alert">
                 {balanceError}
               </p>

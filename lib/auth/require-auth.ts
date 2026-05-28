@@ -19,7 +19,10 @@ export async function requirePrivyAuth(
     return {
       ok: false,
       response: NextResponse.json(
-        { error: "Authentication is not configured on the server" },
+        {
+          error:
+            "Authentication is not configured on the server. Set NEXT_PUBLIC_PRIVY_APP_ID and PRIVY_APP_SECRET in Vercel (Production), then redeploy.",
+        },
         { status: 503 }
       ),
     };

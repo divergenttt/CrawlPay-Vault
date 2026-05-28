@@ -76,6 +76,10 @@ export function DashboardAuthShell({
   useOAuthReturn(setAuthError);
 
   useEffect(() => {
+    if (ready) setAuthError(null);
+  }, [ready, setAuthError]);
+
+  useEffect(() => {
     document.body.classList.add("dashboard-page");
     return () => document.body.classList.remove("dashboard-page");
   }, []);

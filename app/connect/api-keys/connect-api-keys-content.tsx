@@ -20,8 +20,8 @@ import {
 import { ConnectSiteHeader } from "@/components/connect/connect-site-header";
 import { PageTransition } from "@/components/page-transition";
 import { useClientMounted, useCursor } from "@/lib/hooks";
-import "../connect.css";
-import "../api-keys.css";
+import "@/app/connect/connect.css";
+import "@/app/connect/api-keys.css";
 import "@/app/dashboard/dashboard.css";
 
 type KeyStatus = "active" | "paused" | "revoked";
@@ -157,7 +157,7 @@ function AuthGateLoading() {
     <section className="kx-auth-gate">
       <div className="kx-auth-card">
         <div className="kx-auth-title">Access required to create API keys</div>
-        <div className="kx-auth-sub">Starting sign-in…</div>
+        <div className="kx-auth-sub">Loading authentication…</div>
       </div>
     </section>
   );
@@ -189,11 +189,15 @@ function ConnectApiKeysPageContent() {
   useOAuthReturn(setAuthError);
 
   useEffect(() => {
+    if (ready) setAuthError(null);
+  }, [ready, setAuthError]);
+
+  useEffect(() => {
     if (!authPending || isSignedIn) return;
     const timeout = window.setTimeout(() => {
       clearLoginPhase();
       setAuthError(
-        "Sign-in is taking longer than expected. If this persists, check Privy Dashboard (Allowed domains, Google OAuth, Base Sepolia wallet) and try again."
+        "Sign-in is taking longer than expected. If this persists, check Privy Dashboard (Allowed domains, Google OAuth, Base mainnet wallet) and try again."
       );
     }, 40_000);
     return () => window.clearTimeout(timeout);
@@ -340,7 +344,7 @@ function ConnectApiKeysPageContent() {
           <div>
             <div className="cn-eyebrow">
               <span className="pip" style={{ background: "var(--c-blu)", boxShadow: "0 0 8px var(--c-blu)" }} />
-              {rows.filter((r) => r.status === "active").length} active keys · Arc Testnet
+              {rows.filter((r) => r.status === "active").length} active keys · Base mainnet
             </div>
             <h1 className="cn-title cn-title-nowrap">
               A secret PIN <em>for your agents.</em>

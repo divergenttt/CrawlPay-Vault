@@ -3,6 +3,12 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { generateSimulatedTxHash } from "@/lib/arc";
 import { getBotName, isAIBot } from "@/lib/detection/bot-detector";
+import {
+  apiKeyTxHash,
+  authorizeApiKeyForAmount,
+  commitApiKeyUsage,
+} from "@/lib/auth/api-key-access";
+import { getApiKeyTokenFromRequest } from "@/lib/auth/api-key-request";
 import { verifyArcSignature } from "@/lib/payments/gateway";
 import { savePayment } from "@/lib/payments/supabase";
 
@@ -101,11 +107,24 @@ export async function GET(req: NextRequest) {
     "PAYMENT-BOT-ADDRESS"
   );
 
+  const apiKeyToken = getApiKeyTokenFromRequest(req);
   const hasCryptoHeaders = Boolean(paymentSignature && paymentBotAddress);
 
   let tx_hash: string;
+  let apiKeyName: string | undefined;
 
-  if (hasCryptoHeaders) {
+  if (apiKeyToken) {
+    const access = await authorizeApiKeyForAmount(req, AMOUNT_USDC);
+    if (!access.ok) {
+      return NextResponse.json(
+        { error: access.error },
+        { status: access.status }
+      );
+    }
+    await commitApiKeyUsage(access.key, AMOUNT_USDC);
+    tx_hash = apiKeyTxHash(access.key.id);
+    apiKeyName = access.key.name;
+  } else if (hasCryptoHeaders) {
     const valid = await verifyArcSignature(
       paymentSignature!,
       paymentBotAddress!,
@@ -133,7 +152,7 @@ export async function GET(req: NextRequest) {
 
   try {
     await savePayment({
-      bot_name: botName,
+      bot_name: apiKeyName ? `${botName} [key:${apiKeyName}]` : botName,
       user_agent: userAgent,
       page_url,
       amount_usdc: AMOUNT_USDC,
