@@ -1,58 +1,86 @@
 import "server-only";
 
+import {
+  isEmbeddedWalletLinkedAccount,
+  type LinkedAccount,
+} from "@privy-io/node";
+import { getPrivyNodeClient } from "./privy-node-client";
+
 export type EmbeddedWalletRef = {
   address: string;
   walletId: string;
 };
 
-type LinkedAccount = {
-  type?: string;
-  address?: string;
-  id?: string;
-  wallet_client_type?: string;
-  connector_type?: string;
-};
+function isEthereumAddress(value: string): boolean {
+  return /^0x[a-fA-F0-9]{40}$/.test(value);
+}
 
-/** Resolve embedded wallet for a Privy user via REST (server has no id_token). */
-export async function fetchEmbeddedWalletForPrivyUser(
-  privyUserId: string
-): Promise<EmbeddedWalletRef | null> {
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID?.trim();
-  const appSecret = process.env.PRIVY_APP_SECRET?.trim();
-  if (!appId || !appSecret) return null;
+function isPrivyWalletId(value: string): boolean {
+  const trimmed = value.trim();
+  return Boolean(trimmed) && !isEthereumAddress(trimmed);
+}
 
-  const auth = Buffer.from(`${appId}:${appSecret}`).toString("base64");
-  const res = await fetch(`https://api.privy.io/v1/users/${privyUserId}`, {
-    headers: {
-      Authorization: `Basic ${auth}`,
-      "privy-app-id": appId,
-      "Content-Type": "application/json",
-    },
-    cache: "no-store",
-  });
+function embeddedEthereumFromLinkedAccounts(
+  accounts: LinkedAccount[]
+): { address: string; walletId?: string } | null {
+  for (const account of accounts) {
+    if (!isEmbeddedWalletLinkedAccount(account)) continue;
+    if (account.chain_type !== "ethereum") continue;
 
-  if (!res.ok) {
-    console.error(
-      "[CrawlPay] Privy user lookup failed:",
-      res.status,
-      await res.text().catch(() => "")
-    );
-    return null;
+    const address = account.address?.trim();
+    if (!address) continue;
+
+    const linkedId = account.id?.trim();
+    if (linkedId && isPrivyWalletId(linkedId)) {
+      return { address, walletId: linkedId };
+    }
+
+    return { address };
   }
 
-  const user = (await res.json()) as { linked_accounts?: LinkedAccount[] };
-  const accounts = user.linked_accounts ?? [];
+  return null;
+}
 
-  for (const account of accounts) {
-    if (
-      account.type === "wallet" &&
-      account.wallet_client_type === "privy" &&
-      account.address &&
-      account.id
-    ) {
-      return { address: account.address, walletId: account.id };
+async function resolveWalletIdByAddress(
+  privyUserId: string,
+  address: string
+): Promise<string | null> {
+  const privy = getPrivyNodeClient();
+  const normalized = address.toLowerCase();
+
+  for await (const wallet of privy.wallets().list({
+    user_id: privyUserId,
+    chain_type: "ethereum",
+  })) {
+    if (wallet.address?.toLowerCase() === normalized && isPrivyWalletId(wallet.id)) {
+      return wallet.id;
     }
   }
 
   return null;
+}
+
+/** Resolve embedded wallet for a Privy user (address + Privy wallet id for signing). */
+export async function fetchEmbeddedWalletForPrivyUser(
+  privyUserId: string
+): Promise<EmbeddedWalletRef | null> {
+  try {
+    const privy = getPrivyNodeClient();
+    const user = await privy.users()._get(privyUserId);
+    const match = embeddedEthereumFromLinkedAccounts(user.linked_accounts ?? []);
+    if (!match) return null;
+
+    const walletId =
+      match.walletId ??
+      (await resolveWalletIdByAddress(privyUserId, match.address));
+    if (!walletId) return null;
+
+    return { address: match.address, walletId };
+  } catch (err) {
+    console.error(
+      "[CrawlPay] Privy embedded wallet lookup failed:",
+      err instanceof Error ? err.message : err
+    );
+    return null;
+  }
 }

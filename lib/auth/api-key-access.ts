@@ -17,9 +17,9 @@ export type ApiKeyAccessResult =
   | { ok: false; status: number; error: string };
 
 async function ensureKeyWallet(key: ApiKeyRow): Promise<ApiKeyRow> {
-  if (key.owner_wallet_address?.trim()) {
-    return key;
-  }
+  const address = key.owner_wallet_address?.trim();
+  const walletId = key.privy_wallet_id?.trim();
+  if (address && walletId) return key;
 
   const wallet = await fetchEmbeddedWalletForPrivyUser(key.privy_user_id);
   if (!wallet) {

@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
 import { supabase } from "@/lib/payments/supabase";
+import { fetchEmbeddedWalletForPrivyUser } from "@/lib/wallet/privy-user-wallet";
 
 export type ApiKeyStatus = "active" | "paused" | "revoked";
 
@@ -114,6 +115,23 @@ export async function createApiKeyForUser(
   privyUserId: string,
   input: CreateApiKeyInput
 ): Promise<{ row: ApiKeyPublic; token: string }> {
+  const wallet = await fetchEmbeddedWalletForPrivyUser(privyUserId);
+  if (!wallet) {
+    throw new Error(
+      "No embedded wallet linked to this account. Sign in and create a wallet before creating API keys."
+    );
+  }
+
+  const clientAddress = input.ownerWalletAddress?.trim();
+  if (
+    clientAddress &&
+    clientAddress.toLowerCase() !== wallet.address.toLowerCase()
+  ) {
+    throw new Error(
+      "Wallet address does not match your linked embedded wallet."
+    );
+  }
+
   const token = generateApiToken();
   const insert = {
     privy_user_id: privyUserId,
@@ -123,8 +141,8 @@ export async function createApiKeyForUser(
     per_req_usdc: input.perReqUsdc,
     daily_usdc: input.dailyUsdc,
     status: "active" as const,
-    owner_wallet_address: input.ownerWalletAddress?.trim() || null,
-    privy_wallet_id: input.privyWalletId?.trim() || null,
+    owner_wallet_address: wallet.address,
+    privy_wallet_id: wallet.walletId,
   };
 
   const { data, error } = await supabase
