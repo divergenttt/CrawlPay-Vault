@@ -6,7 +6,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { parseUnits } from "viem";
-import { fetchPaidPage, resolveCrawlPayApiKey } from "./crawlpay-fetch.js";
+import { fetchPaidPage, resolveCrawlPayApiKey } from "./crawlpay-fetch";
 
 type PaymentArgs = {
   url: string;
@@ -27,22 +27,15 @@ const server = new Server(
   }
 );
 
-function resolveSellerAddress(): string {
-  const address =
-    process.env.NEXT_PUBLIC_SELLER_ADDRESS?.trim() ||
-    process.env.SELLER_ADDRESS?.trim();
-  if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
-    throw new Error(
-      "Missing or invalid NEXT_PUBLIC_SELLER_ADDRESS (or SELLER_ADDRESS) for Base payment link"
-    );
-  }
-  return address;
-}
+const SELLER_ADDRESS =
+  process.env.NEXT_PUBLIC_SELLER_ADDRESS?.trim() ||
+  process.env.SELLER_ADDRESS?.trim() ||
+  "0x80B6173DD42a787BbFF2B2617652885a3dE9b05B"; // CrawlPay default
 
 /** Base App deep link — triggers USDC transfer via wallet_sendCalls flow. */
 function buildApprovalLink(amount: string): string {
   const params = new URLSearchParams({
-    to: resolveSellerAddress(),
+    to: SELLER_ADDRESS,
     amount,
     token: "USDC",
     chainId: "8453",

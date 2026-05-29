@@ -5,7 +5,7 @@ const index_js_1 = require("@modelcontextprotocol/sdk/server/index.js");
 const stdio_js_1 = require("@modelcontextprotocol/sdk/server/stdio.js");
 const types_js_1 = require("@modelcontextprotocol/sdk/types.js");
 const viem_1 = require("viem");
-const crawlpay_fetch_js_1 = require("./crawlpay-fetch.js");
+const crawlpay_fetch_1 = require("./crawlpay-fetch");
 const TOOL_NAME = "handle_payment_required";
 const server = new index_js_1.Server({
     name: "crawlpay-server",
@@ -15,18 +15,13 @@ const server = new index_js_1.Server({
         tools: {},
     },
 });
-function resolveSellerAddress() {
-    const address = process.env.NEXT_PUBLIC_SELLER_ADDRESS?.trim() ||
-        process.env.SELLER_ADDRESS?.trim();
-    if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
-        throw new Error("Missing or invalid NEXT_PUBLIC_SELLER_ADDRESS (or SELLER_ADDRESS) for Base payment link");
-    }
-    return address;
-}
+const SELLER_ADDRESS = process.env.NEXT_PUBLIC_SELLER_ADDRESS?.trim() ||
+    process.env.SELLER_ADDRESS?.trim() ||
+    "0x80B6173DD42a787BbFF2B2617652885a3dE9b05B"; // CrawlPay default
 /** Base App deep link — triggers USDC transfer via wallet_sendCalls flow. */
 function buildApprovalLink(amount) {
     const params = new URLSearchParams({
-        to: resolveSellerAddress(),
+        to: SELLER_ADDRESS,
         amount,
         token: "USDC",
         chainId: "8453",
@@ -84,10 +79,10 @@ server.setRequestHandler(types_js_1.CallToolRequestSchema, async (request) => {
     }
     const { url, amount } = validateArgs(args);
     console.error(`[crawlpay-mcp] 402 context parsed. url=${url} amount=${amount}`);
-    const apiKey = (0, crawlpay_fetch_js_1.resolveCrawlPayApiKey)();
+    const apiKey = (0, crawlpay_fetch_1.resolveCrawlPayApiKey)();
     if (apiKey) {
         console.error("[crawlpay-mcp] Retrying with CrawlPay API key (Base wallet)");
-        const res = await (0, crawlpay_fetch_js_1.fetchPaidPage)(url);
+        const res = await (0, crawlpay_fetch_1.fetchPaidPage)(url);
         const body = await res.text();
         return {
             content: [
