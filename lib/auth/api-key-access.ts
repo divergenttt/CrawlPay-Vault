@@ -11,11 +11,12 @@ import {
   settleUsdcFromEmbeddedWallet,
 } from "@/lib/wallet/settle-usdc-on-base";
 import {
-  serverSignerNotConfiguredMessage,
+  privyOnchainConfigError,
+} from "@/lib/wallet/privy-onchain-config";
+import {
   walletHasServerSigner,
   walletMissingServerSignerMessage,
 } from "@/lib/wallet/privy-wallet-signers";
-import { getPrivySignerQuorumId } from "@/lib/wallet/privy-signer-quorum-id";
 import type { NextRequest } from "next/server";
 
 export type ApiKeyAccessResult =
@@ -150,8 +151,9 @@ export async function settleApiKeyPayment(
 
   const walletId = access.privyWalletId;
   if (isApiKeyOnchainEnabled() && walletId && seller) {
-    if (!getPrivySignerQuorumId()) {
-      throw new Error(serverSignerNotConfiguredMessage());
+    const configError = privyOnchainConfigError();
+    if (configError) {
+      throw new Error(configError);
     }
 
     const hasSigner = await walletHasServerSigner(access.walletAddress);
@@ -191,7 +193,10 @@ function formatOnchainSettlementError(err: unknown): string {
     return walletMissingServerSignerMessage();
   }
   if (raw.includes("Missing PRIVY_AUTHORIZATION_PRIVATE_KEY")) {
-    return serverSignerNotConfiguredMessage();
+    return (
+      privyOnchainConfigError() ??
+      "Missing PRIVY_AUTHORIZATION_PRIVATE_KEY on the server."
+    );
   }
   return raw;
 }
