@@ -182,6 +182,7 @@ function ConnectApiKeysPageContent() {
   const walletAddress = embeddedWallet?.address;
   const {
     balanceUsdc,
+    balanceEth,
     loading: balanceLoading,
     error: balanceError,
     refresh: refreshBalance,
@@ -427,6 +428,7 @@ function ConnectApiKeysPageContent() {
               />
               <DepositWidget
                 balanceUsdc={balanceUsdc}
+                balanceEth={balanceEth}
                 balanceLoading={balanceLoading}
                 balanceError={balanceError}
                 onRefreshBalance={() => void refreshBalance()}

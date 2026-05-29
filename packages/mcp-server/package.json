@@ -5,8 +5,12 @@
   "description": "Official CrawlPay MCP server for payment-required (402) flows",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "crawlpay-mcp": "dist/index.js"
+  },
   "files": [
-    "dist"
+    "dist",
+    "crawlpay.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

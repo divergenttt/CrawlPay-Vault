@@ -1,22 +1,27 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchArcUsdcBalance } from "@/lib/wallet/arc-usdc";
+import {
+  fetchArcUsdcBalance,
+  fetchBaseEthBalance,
+} from "@/lib/wallet/arc-usdc";
 
 /** Background refresh interval — avoid hammering public RPC endpoints. */
 const POLL_MS = 45_000;
 
 function toBalanceErrorMessage(err: unknown): string {
-  const message = err instanceof Error ? err.message : "Could not load USDC balance";
+  const message =
+    err instanceof Error ? err.message : "Could not load wallet balance";
   const lower = message.toLowerCase();
   if (lower.includes("timed out") || lower.includes("took too long")) {
     return "Balance temporarily unavailable (network timeout).";
   }
-  return "Could not load USDC balance.";
+  return "Could not load wallet balance.";
 }
 
 export function useArcUsdcBalance(walletAddress: string | undefined) {
   const [balanceUsdc, setBalanceUsdc] = useState<number | null>(null);
+  const [balanceEth, setBalanceEth] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
@@ -25,6 +30,7 @@ export function useArcUsdcBalance(walletAddress: string | undefined) {
   const refresh = useCallback(async () => {
     if (!walletAddress) {
       setBalanceUsdc(null);
+      setBalanceEth(null);
       setError(null);
       setLoading(false);
       hasLoadedRef.current = false;
@@ -39,11 +45,25 @@ export function useArcUsdcBalance(walletAddress: string | undefined) {
     }
 
     try {
-      const value = await fetchArcUsdcBalance(walletAddress);
-      if (mountedRef.current) {
-        setBalanceUsdc(value);
+      const [usdcResult, ethResult] = await Promise.allSettled([
+        fetchArcUsdcBalance(walletAddress),
+        fetchBaseEthBalance(walletAddress),
+      ]);
+
+      if (!mountedRef.current) return;
+
+      if (usdcResult.status === "fulfilled") {
+        setBalanceUsdc(usdcResult.value);
         hasLoadedRef.current = true;
         setError(null);
+      } else if (!isBackground) {
+        setError(toBalanceErrorMessage(usdcResult.reason));
+      }
+
+      if (ethResult.status === "fulfilled") {
+        setBalanceEth(ethResult.value);
+      } else if (!isBackground && usdcResult.status === "fulfilled") {
+        setBalanceEth(null);
       }
     } catch (err) {
       if (mountedRef.current && !isBackground) {
@@ -79,13 +99,16 @@ export function useArcUsdcBalance(walletAddress: string | undefined) {
 
   const isZero = balanceUsdc !== null && balanceUsdc === 0;
   const hasFunds = balanceUsdc !== null && balanceUsdc > 0;
+  const ethIsZero = balanceEth !== null && balanceEth === 0;
 
   return {
     balanceUsdc,
+    balanceEth,
     loading,
     error,
     refresh,
     isZero,
     hasFunds,
+    ethIsZero,
   };
 }

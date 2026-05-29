@@ -90,6 +90,13 @@
   margin-bottom: 6px;
 }
 
+.kx-wallet-balance-items {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
 .kx-wallet-balance strong {
   font-family: 'DM Mono', monospace;
   font-size: 13px;
@@ -97,6 +104,11 @@
   letter-spacing: 0.02em;
   color: var(--white);
   font-feature-settings: 'tnum' 1;
+}
+
+.kx-balance-asset {
+  color: var(--c-red);
+  font-weight: 500;
 }
 
 .kx-balance-paused-banner {

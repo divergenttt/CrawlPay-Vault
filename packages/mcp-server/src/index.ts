@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -26,29 +27,27 @@ const server = new Server(
   }
 );
 
-function buildStoredRequest(url: string, amount: string) {
-  return {
-    protocol: "base-mcp",
-    version: "0.1.0",
-    method: "wallet_sendCalls",
-    chainId: "base",
-    payment: {
-      currency: "USDC",
-      amount,
-      purpose: "x402 Payment Required",
-    },
-    context: {
-      protectedUrl: url,
-      source: "crawlpay-mcp",
-      requestedAt: new Date().toISOString(),
-    },
-  };
+function resolveSellerAddress(): string {
+  const address =
+    process.env.NEXT_PUBLIC_SELLER_ADDRESS?.trim() ||
+    process.env.SELLER_ADDRESS?.trim();
+  if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
+    throw new Error(
+      "Missing or invalid NEXT_PUBLIC_SELLER_ADDRESS (or SELLER_ADDRESS) for Base payment link"
+    );
+  }
+  return address;
 }
 
-function buildApprovalLink(storedRequest: unknown): string {
-  const payload = Buffer.from(JSON.stringify(storedRequest)).toString("base64url");
-  // Placeholder endpoint until Base publishes the canonical MCP approval URL.
-  return `https://example.com/base-mcp/confirm?request=${payload}`;
+/** Base App deep link — triggers USDC transfer via wallet_sendCalls flow. */
+function buildApprovalLink(amount: string): string {
+  const params = new URLSearchParams({
+    to: resolveSellerAddress(),
+    amount,
+    token: "USDC",
+    chainId: "8453",
+  });
+  return `https://www.base.org/send?${params.toString()}`;
 }
 
 function validateArgs(args: unknown): PaymentArgs {
@@ -78,7 +77,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: TOOL_NAME,
         description:
-          "Handle HTTP 402 payment-required responses and prepare a Base MCP payment approval link.",
+          "Handle HTTP 402 Payment Required from CrawlPay-protected pages. " +
+          "Call when a webpage returns 402 — pays automatically if CRAWLPAY_API_KEY is set, " +
+          "otherwise returns a Base App USDC approval link.",
         inputSchema: {
           type: "object",
           properties: {
@@ -130,21 +131,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
   }
 
-  const storedRequest = buildStoredRequest(url, amount);
-  const approvalLink = buildApprovalLink(storedRequest);
+  const approvalLink = buildApprovalLink(amount);
 
-  console.error("[crawlpay-mcp] No API key — returning Arc/x402 placeholder link");
+  console.error("[crawlpay-mcp] No API key — returning Base App approval link");
 
   return {
     content: [
       {
         type: "text",
         text:
-          "Payment required — set CRAWLPAY_API_KEY=cr_live_… for Base wallet billing,\n" +
-          "or use Arc x402 headers manually.\n\n" +
+          "Payment required — set CRAWLPAY_API_KEY=cr_live_… for automatic Base wallet billing,\n" +
+          "or approve USDC payment via Base App:\n\n" +
           `Protected URL: ${url}\n` +
           `Amount: ${amount} USDC\n` +
-          `Placeholder approval link: ${approvalLink}`,
+          `Base approval link: ${approvalLink}`,
       },
     ],
   };

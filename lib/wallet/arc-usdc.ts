@@ -1,6 +1,7 @@
 import {
   createPublicClient,
   erc20Abi,
+  formatEther,
   formatUnits,
   http,
   type Address,
@@ -61,4 +62,30 @@ export function formatUsdcBalance(amount: number): string {
   if (amount === 0) return "0.000";
   if (amount < 0.001) return amount.toFixed(6);
   return amount.toFixed(3);
+}
+
+async function readEthBalanceOnce(walletAddress: string): Promise<bigint> {
+  return publicClient.getBalance({ address: walletAddress as Address });
+}
+
+export async function fetchBaseEthBalance(
+  walletAddress: string
+): Promise<number> {
+  try {
+    const raw = await readEthBalanceOnce(walletAddress);
+    return parseFloat(formatEther(raw));
+  } catch {
+    await new Promise((r) => setTimeout(r, 800));
+    const raw = await readEthBalanceOnce(walletAddress);
+    return parseFloat(formatEther(raw));
+  }
+}
+
+export function formatEthBalance(amountEth: number): string {
+  if (!Number.isFinite(amountEth)) return "—";
+  if (amountEth === 0) return "0";
+  if (amountEth < 0.000_001) return amountEth.toFixed(7);
+  if (amountEth < 0.0001) return amountEth.toFixed(6);
+  if (amountEth < 0.01) return amountEth.toFixed(4);
+  return amountEth.toFixed(3);
 }

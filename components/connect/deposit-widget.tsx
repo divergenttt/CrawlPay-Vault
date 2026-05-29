@@ -7,7 +7,7 @@ import {
   usePrivy,
 } from "@privy-io/react-auth";
 import { base } from "viem/chains";
-import { formatUsdcBalance } from "@/lib/wallet/arc-usdc";
+import { formatEthBalance, formatUsdcBalance } from "@/lib/wallet/arc-usdc";
 import { useEmbeddedWalletAddress } from "@/lib/wallet/use-embedded-wallet-address";
 
 const FUND_CHAIN_ID = Number(process.env.NEXT_PUBLIC_FUND_CHAIN_ID || base.id);
@@ -18,6 +18,7 @@ function shortAddress(address: string): string {
 
 type DepositWidgetProps = {
   balanceUsdc: number | null;
+  balanceEth?: number | null;
   balanceLoading?: boolean;
   balanceError?: string | null;
   onRefreshBalance?: () => void;
@@ -25,6 +26,7 @@ type DepositWidgetProps = {
 
 export function DepositWidget({
   balanceUsdc,
+  balanceEth = null,
   balanceLoading = false,
   balanceError = null,
   onRefreshBalance,
@@ -87,6 +89,18 @@ export function DepositWidget({
   const showZeroHint =
     walletAddress && balanceUsdc !== null && balanceUsdc === 0;
 
+  const balancesLoading = balanceLoading && balanceUsdc === null;
+  const usdcDisplay = balancesLoading
+    ? "…"
+    : balanceError
+      ? "—"
+      : `${formatUsdcBalance(balanceUsdc ?? 0)} USDC`;
+  const ethDisplay = balancesLoading
+    ? "…"
+    : balanceError
+      ? "—"
+      : `${formatEthBalance(balanceEth ?? 0)} ETH`;
+
   const headAction =
     !ready ? null : !walletAddress ? (
       <button
@@ -128,22 +142,25 @@ export function DepositWidget({
               <>
                 <p className="kx-wallet-balance">
                   Balance:{" "}
-                  <strong>
-                    {balanceLoading && balanceUsdc === null
-                      ? "…"
-                      : balanceError
-                        ? "—"
-                        : `${formatUsdcBalance(balanceUsdc ?? 0)} USDC`}
-                  </strong>
+                  <span className="kx-wallet-balance-items">
+                    <strong>{usdcDisplay}</strong>
+                    <strong>{ethDisplay}</strong>
+                  </span>
                 </p>
                 {showZeroHint ? (
                   <p className="kx-panel-muted kx-panel-warn">
-                    Top up to activate your agents
+                    Top up{" "}
+                    <span className="kx-balance-asset">USDC</span> and a little{" "}
+                    <span className="kx-balance-asset">ETH</span> for gas to
+                    activate your agents
                   </p>
                 ) : (
                   <p className="kx-panel-muted">
-                    Agent payments use USDC on Base mainnet. Top up via Privy
-                    (card, transfer, or crypto).
+                    Agent payments use{" "}
+                    <span className="kx-balance-asset">USDC</span> on Base
+                    mainnet for transfers and a small amount of{" "}
+                    <span className="kx-balance-asset">ETH</span> for gas. Top up
+                    via Privy (card, transfer, or crypto).
                   </p>
                 )}
                 <div className="kx-deposit-address">
