@@ -422,10 +422,13 @@ function ConnectApiKeysPageContent() {
         ) : mounted && isSignedIn ? (
           <>
             <section className="kx-account-row">
-              <SignedInBanner
-                sessionStatus={sessionStatus}
-                variant="panel"
-              />
+              <div className="kx-account-aside">
+                <SignedInBanner
+                  sessionStatus={sessionStatus}
+                  variant="panel"
+                />
+                <OnchainSignerBanner />
+              </div>
               <DepositWidget
                 balanceUsdc={balanceUsdc}
                 balanceEth={balanceEth}
@@ -434,8 +437,6 @@ function ConnectApiKeysPageContent() {
                 onRefreshBalance={() => void refreshBalance()}
               />
             </section>
-
-            <OnchainSignerBanner />
 
             <section className="kx-cta">
               <div>

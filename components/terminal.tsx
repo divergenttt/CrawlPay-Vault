@@ -59,14 +59,14 @@ export function Terminal() {
           <span className="tok-plain">{"  "}</span>
           <span className="tok-prop">network</span>
           <span className="tok-plain">: </span>
-          <span className="tok-string">&apos;arcTestnet&apos;</span>
+          <span className="tok-string">&apos;base&apos;</span>
           <span className="tok-plain">,</span>
         </span>
         <span className="line">
           <span className="tok-plain">{"  "}</span>
           <span className="tok-prop">wallet</span>
           <span className="tok-plain">: </span>
-          <span className="tok-string">&apos;0x9a4f...c021&apos;</span>
+          <span className="tok-string">&apos;0xYourWallet&apos;</span>
           <span className="tok-plain">,</span>
         </span>
         <span className="line">

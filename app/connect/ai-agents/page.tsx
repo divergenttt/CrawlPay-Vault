@@ -30,7 +30,10 @@ const MCP_JSON = `{
   "mcpServers": {
     "crawlpay-server": {
       "command": "npx",
-      "args": ["-y", "@crawlpay/mcp-server"]
+      "args": ["-y", "@crawlpay/mcp-server"],
+      "env": {
+        "CRAWLPAY_API_KEY": "cr_live_YOUR_KEY_HERE"
+      }
     }
   }
 }`;
@@ -165,7 +168,7 @@ export default function ConnectAiAgentsPage() {
 
         <section className="cn-section">
           <div className="cn-section-head">
-            <h2 className="cn-section-title">Connect AI Agents</h2>
+            <h2 className="cn-section-title">MCP & Plugins</h2>
             <span className="cn-section-sub">{tab === "mcp" ? "MCP server · npx" : "ElizaOS · plugin"}</span>
           </div>
 
@@ -202,7 +205,14 @@ export default function ConnectAiAgentsPage() {
               </div>
             </div>
             {tab === "mcp" ? (
-              <CodeBlock lang="json" source={MCP_JSON} />
+              <>
+                <CodeBlock lang="json" source={MCP_JSON} />
+                <p className="ag-api-key-cta">
+                  <Link href="/connect/api-keys" data-page-link>
+                    Get your API key
+                  </Link>
+                </p>
+              </>
             ) : (
               <>
                 <CodeBlock lang="bash" source={ELIZA_BASH} />
@@ -214,7 +224,7 @@ export default function ConnectAiAgentsPage() {
         </section>
 
         <div className="cn-foot">
-          <span>Connect · AI Agents · MCP · Base network</span>
+          <span>Connect · MCP & Plugins · Base network</span>
           <span>
             <Link href="/connect/api-keys" data-page-link>
               ↗ Need a key? See API Keys

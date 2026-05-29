@@ -4,6 +4,7 @@ import { Nav } from "@/components/nav";
 import { Hero, Stats } from "@/components/hero";
 import { PageTransition } from "@/components/page-transition";
 import { CtaSection, Footer } from "@/components/sections/cta-section";
+import { ConnectWaysSection } from "@/components/sections/connect-ways-section";
 import { FlowSection } from "@/components/sections/flow-section";
 import { ProtocolSection } from "@/components/sections/protocol-section";
 import { SdkSection } from "@/components/sections/sdk-section";
@@ -28,6 +29,7 @@ export default function Home() {
         <ProtocolSection />
         <StackSection />
         <FlowSection />
+        <ConnectWaysSection />
         <SdkSection />
         <CtaSection />
       </main>

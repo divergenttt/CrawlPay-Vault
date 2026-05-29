@@ -198,12 +198,32 @@ export function SignedInBanner({
   const mounted = useClientMounted();
   const profile = getPrivyUserProfile(user);
 
-  if (!mounted || !isSignedIn || !profile) return null;
+  if (!isSignedIn || !profile) return null;
 
   const verifying = sessionStatus === "checking";
   const failed = sessionStatus === "unverified";
 
   const isPanel = variant === "panel";
+
+  if (!mounted) {
+    if (!isPanel) return null;
+    return (
+      <div
+        className="kx-connect-panel cp-signed-panel cp-signed-panel-skeleton"
+        aria-hidden
+      >
+        <p className="kx-panel-eyebrow">Session</p>
+        <div className="kx-panel-body">
+          <div className="kx-panel-row">
+            <div className="cp-signed-banner-body">
+              <p className="cp-signed-banner-text">Signed in as …</p>
+              <p className="cp-signed-banner-hint">Loading session…</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

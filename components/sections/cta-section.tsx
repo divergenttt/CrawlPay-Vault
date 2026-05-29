@@ -15,7 +15,7 @@ export function CtaSection() {
           <p>Permissionless. MIT-licensed. Your content monetized while you sleep.</p>
           <div className="cta-buttons">
             <a
-              href="https://github.com/divergenttt/CrawlPay-Vault#readme"
+              href="https://github.com/divergenttt/CrawlPay#readme"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -24,7 +24,7 @@ export function CtaSection() {
               </button>
             </a>
             <a
-              href="https://github.com/divergenttt/CrawlPay-"
+              href="https://github.com/divergenttt/CrawlPay"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -45,13 +45,13 @@ export function Footer() {
     <footer className="footer">
       <div>CrawlPay · MIT · 2026</div>
       <div className="footer-links">
-        <a href="https://github.com/divergenttt/CrawlPay-" target="_blank" rel="noopener noreferrer">
+        <a href="https://github.com/divergenttt/CrawlPay" target="_blank" rel="noopener noreferrer">
           GitHub
         </a>
         <a href="/dashboard" data-page-link>
           Dashboard
         </a>
-        <a href="https://github.com/divergenttt/CrawlPay-SDK" target="_blank" rel="noopener noreferrer">
+        <a href="https://github.com/divergenttt/CrawlPay" target="_blank" rel="noopener noreferrer">
           SDK
         </a>
         <a href="https://arc.network" target="_blank" rel="noopener noreferrer">

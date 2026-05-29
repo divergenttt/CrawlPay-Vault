@@ -17,7 +17,7 @@ export function ProtocolSection() {
     {
       label: "SEARCH · EXA",
       title: "Full autonomous loop.",
-      body: "Agents query, pay, retrieve, and cite - without a human in the chain. Indexed by Exa, settled by Circle, no rate limits.",
+      body: "Agents query, pay, retrieve, and cite - without a human in the chain. Indexed by Exa, settled on Base, no rate limits.",
       code: "exa.search({ budget: 0.10 })",
     },
     {

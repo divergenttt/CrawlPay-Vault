@@ -2,7 +2,7 @@
 
 export function StackSection() {
   const integrations = [
-    { badge: "PAYMENTS", name: "Arc + Circle", desc: "USDC settlement on Arc. Final in 800ms, gas paid by the agent." },
+    { badge: "PAYMENTS", name: "Base + Circle", desc: "USDC settlement on Base Mainnet. Final in seconds, gas paid by the agent." },
     { badge: "PROTOCOL", name: "x402", desc: "HTTP 402 reborn. Wallet-signed receipts, no API keys to leak." },
     { badge: "PRIVACY", name: "Story CDR", desc: "Confidential Data Rooms. Hold keys, not user data - provable revocation." },
     { badge: "SEARCH", name: "Exa", desc: "Indexed by intent, not by spam. Agents reach you because you matter." },

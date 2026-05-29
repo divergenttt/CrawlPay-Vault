@@ -102,7 +102,7 @@ export function Nav() {
                   >
                     <span className={`dot ${["ai", "api", "web"][i]}`} />
                     {href === "/connect/ai-agents"
-                      ? "AI Agents"
+                      ? "MCP & Plugins"
                       : href === "/connect/api-keys"
                         ? "API Keys"
                         : "Web SDK"}
@@ -112,7 +112,7 @@ export function Nav() {
             </div>
           </div>
           <a
-            href="https://github.com/divergenttt/CrawlPay-"
+            href="https://github.com/divergenttt/CrawlPay"
             target="_blank"
             rel="noopener noreferrer"
           >

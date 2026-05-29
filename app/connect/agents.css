@@ -142,6 +142,24 @@
   background: #08080d;
   margin-top: 4px;
 }
+
+.ag-api-key-cta {
+  margin-top: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ag-api-key-cta a {
+  color: var(--c-red);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ag-api-key-cta a:hover {
+  color: #ff6b7d;
+}
 .ag-codebar {
   display: flex;
   align-items: center;

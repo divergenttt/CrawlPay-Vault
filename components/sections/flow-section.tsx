@@ -11,8 +11,8 @@ export function FlowSection() {
   const steps = [
     { title: "Bot visits", desc: "A crawler issues a normal GET against your URL. Headers identify it; no key needed." },
     { title: "402 returned", desc: "CrawlPay middleware short-circuits with HTTP 402 + a payment manifest in the body." },
-    { title: "EIP-191 signed", desc: "The bot wallet signs the manifest. No gas estimation, no JSON-RPC roundtrip — pure offline." },
-    { title: "Arc settles", desc: "The signature posts to Arc. Circle escrow releases USDC into your wallet within a block." },
+    { title: "API key settles", desc: "Agent sends Authorization: Bearer cr_live_… Server checks Base USDC balance, settles on-chain, and unlocks the page." },
+    { title: "x402 legacy", desc: "Without an API key, the bot wallet signs the payment manifest (EIP-191). Arc escrow releases USDC — the original x402 settlement path." },
     { title: "Content delivered", desc: "200 OK streams the payload back. The whole exchange completes in under one second." },
   ];
 

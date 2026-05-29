@@ -7,7 +7,7 @@ export function SdkSection() {
     <section className="section" id="sdk">
       <div className="section-head section-head-sdk">
         <div>
-          <div className="section-num">04 — Install</div>
+          <div className="section-num">05 — Install</div>
         </div>
         <div className="section-head-sdk-title">
           <h2 className="section-title section-title-nowrap">

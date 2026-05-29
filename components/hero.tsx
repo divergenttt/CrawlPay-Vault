@@ -27,11 +27,11 @@ export function Hero() {
           </h1>
           <p className="hero-body">Set it once. Bots pay forever.</p>
           <div className="hero-buttons">
-            <a href="https://github.com/divergenttt/CrawlPay-SDK" target="_blank" rel="noopener noreferrer">
+            <Link href="/connect/api-keys" data-page-link>
               <button type="button" className="btn-primary">
                 Start earning →
               </button>
-            </a>
+            </Link>
             <Link href="/dashboard" data-page-link>
               <button type="button" className="btn-outline">
                 Live dashboard
@@ -65,7 +65,6 @@ export function Hero() {
 
 export function Stats() {
   const items = [
-    { num: "2,430", suffix: "+", label: "Transactions on Arc" },
     { num: "11", suffix: "", label: "AI bots supported" },
     { num: "$0.001", suffix: "", label: "Per page crawled" },
     { num: "1s", prefix: "<", label: "Settlement time" },
