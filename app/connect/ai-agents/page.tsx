@@ -291,23 +291,6 @@ export default function ConnectAiAgentsPage() {
                 >
                   <CodeBlock lang="prompt" source={MCP_TEST_PROMPT} />
                 </InstallStep>
-
-                <div className="ag-warn-note" role="note">
-                  <span className="ag-warn-badge">Note</span>
-                  <p>
-                    npm publish coming soon. Install from GitHub:{" "}
-                    <a
-                      href="https://github.com/divergenttt/CrawlPay-MCP"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      divergenttt/CrawlPay-MCP
-                    </a>
-                    — clone the repo, run <code>npm install &amp;&amp; npm run build</code>,
-                    then set <code>command</code> to <code>node</code> and{" "}
-                    <code>args</code> to the path of <code>dist/index.js</code>.
-                  </p>
-                </div>
               </>
             ) : (
               <>
