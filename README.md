@@ -38,7 +38,7 @@ Agent  ←  200 OK + content + tx_hash
 
 ---
 
-## MCP Server
+### MCP Server
 
 Works with Claude Desktop, Cursor, Windsurf - any MCP-compatible assistant.
 
@@ -79,17 +79,17 @@ Inputs: `url` (string), `amount` (string, e.g. "0.001")
 Standard mode gates public pages. Vault mode goes further — content that doesn't exist in plaintext anywhere. Datasets stored in Story Protocol CDR vaults, cryptographically locked until payment clears.
 
 ```
-Bot    → GET /api/page
-       ← 402 + payment manifest
 
-Bot    → GET /api/page + payment-signature
-Server → verifySignature → savePayment
-       ← 200 + content
+HTTP
+
+Bot → GET /api/page + X-CrawlPay-Vault: {uuid}
+    ← 402 + X-Payment-Required
 
 Bot → GET /api/page + payment-signature
 Server → verifySignature → CDR.accessVault(uuid)
 Story Protocol → TDH2 threshold decryption → private content
     ← 200 + decrypted dataset
+
 ```
 
 The payment is the access condition. No trusted middleman needed.
@@ -100,12 +100,16 @@ Bot signs EIP-191 payment authorization → Arc settles → content delivered.
 
 ```
 
-Bot → GET /api/page ← 402 + payment manifest Bot → GET /api/page + payment-signature
-Server → verifySignature → savePayment ← 200 + content
+Bot → GET /api/page
+    ← 402 + payment manifest
+
+Bot → GET /api/page + payment-signature
+Server → verifySignature → savePayment
+    ← 200 + content
 
 ```
 
-## Exa + CrawlPay: Full Autonomous Loop
+### Exa + CrawlPay: Full Autonomous Loop
 
 [Exa](https://exa.ai) is a search API built for AI agents with native x402 support — same protocol as CrawlPay.
 
