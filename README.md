@@ -8,28 +8,81 @@
 
 ## The Problem
 
-GPTBot, ClaudeBot, PerplexityBot — they crawl your site constantly. They read your articles, your docs, your research, and train models on all of it. You built that content. You get nothing back.
+AI Bots crawl your site constantly. They read your articles, your docs, your research, and train models on all of it. You built that content. You get nothing back.
 
-Cloudflare noticed this too and started testing pay-per-crawl — but only for Enterprise customers. Regular developers, bloggers, indie site owners? No option.
-
-That's what CrawlPay is for.
+Cloudflare noticed this too - but only for Enterprise.
+CrawlPay is for everyone else.
 
 ---
 
 ## How It Works
 
-### Standard Mode
+### API Key Mode (primary)
 
-A bot visits your page and gets an HTTP 402 response. It signs a payment authorization, Arc settles $0.001 USDC in under a second, and the content is delivered. Your dashboard updates in real time.
+Agent sends Bearer token → server checks Base USDC balance → settles on-chain via Privy → content delivered.
 
 ```
-Bot → GET /api/page
-    ← 402 + X-Payment-Required
+Agent → GET /api/page + Authorization: Bearer cr_live_... + User-Agent: GPTBot
+Server → verify key → check Base balance → settle USDC ← 200 + content + tx_hash
 
-Bot → GET /api/page + payment-signature
-Server → verifySignature → savePayment → Supabase
-    ← 200 + content
 ```
+
+---
+
+## MCP Server
+
+Works with Claude Desktop, Cursor, Windsurf - any MCP-compatible assistant.
+
+**What it does:**
+- Detects HTTP 402 responses automatically
+- Pays $0.001 USDC per page using your API key
+- Returns unlocked content to the agent
+- Records on-chain tx_hash for every payment
+- Falls back to Base App approval link if no API key
+
+**Add to your mcpServers config:**
+
+```json
+{
+  "mcpServers": {
+    "crawlpay-server": {
+      "command": "npx",
+      "args": ["-y", "@crawlpay/mcp-server"],
+      "env": {
+        "CRAWLPAY_API_KEY": "cr_live_YOUR_KEY_HERE"
+      }
+    }
+  }
+}
+```
+
+**Get your API key →** crawl-pay.com/connect/api-keys
+
+**Available tool:**
+
+`handle_payment_required` — call when a page returns 402.
+Inputs: `url` (string), `amount` (string, e.g. "0.001")
+
+---
+
+## Vault Mode — Story Protocol CDR
+
+Standard mode gates public pages. Vault mode goes further.
+
+**What is CDR (Confidential Data Rooms)?**
+
+Story Protocol's CDR stores content that doesn't exist in plaintext anywhere.
+Datasets are cryptographically locked on IPFS + Story Aeneid chain.
+Content decrypts only after payment clears — no trusted middleman.
+
+**Why use it:**
+
+- Private datasets — training data, research, proprietary content
+- Provable access control — payment IS the access condition
+- Revoke anytime — remove access without changing content
+- AI-native — agents pay and decrypt in one flow
+
+**How it works:**
 
 ### Vault Mode (Story CDR)
 
@@ -47,7 +100,16 @@ Story Protocol → TDH2 threshold decryption → private content
 
 The payment is the access condition. No trusted middleman needed.
 
----
+### x402 Mode (legacy / Arc)
+
+Bot signs EIP-191 payment authorization → Arc settles → content delivered.
+
+```
+
+Bot → GET /api/page ← 402 + payment manifest Bot → GET /api/page + payment-signature
+Server → verifySignature → savePayment ← 200 + content
+
+```
 
 ## Exa + CrawlPay: Full Autonomous Loop
 
@@ -69,30 +131,19 @@ npx tsx scripts/exa-crawlpay-agent.ts "AI payment infrastructure x402"
 
 ---
 
-## Why Arc
-
-| | Ethereum | Arc |
-|---|---|---|
-| Gas per transaction | ~$0.50 | ~$0.000006 |
-| Settlement time | 12 seconds | < 1 second |
-| Viable for $0.001 payments | ❌ | ✅ |
-
-On Ethereum, gas costs more than the payment itself. Arc makes $0.001 per crawl economically viable.
-
----
-
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Payment protocol | x402 + Circle Nanopayments |
-| Payment network | Arc Testnet (USDC) |
+| Payment network | Base Mainnet (USDC) |
+| Payment protocol | x402 |
+| Auth | Privy |
+| Embedded wallets | Privy (Base) |
 | Private data | Story Protocol CDR |
 | File storage | IPFS via Pinata |
 | Search layer | Exa (x402 native) |
-| Agent framework | ElizaOS plugin |
+| Agent framework | ElizaOS plugin + MCP server |
 | Database | Supabase |
-| Auth | Privy |
 | Frontend | Next.js 14, TypeScript |
 | Deploy | Vercel |
 
@@ -116,59 +167,68 @@ npx ts-node scripts/deposit.ts balance    # check Circle Gateway balance
 
 ---
 
-## Environment Variables
+## Self-Hosting
 
-| Variable | Required | Description |
-|---|---|---|
-| `STORY_PRIVATE_KEY` | CDR vaults | Story Aeneid wallet private key |
-| `STORY_API_URL` | No | Story-API REST endpoint (default: testnet node) |
-| `PINATA_JWT` | Vault uploads | Pinata API token for IPFS |
-| `PINATA_GATEWAY` | Vault downloads | Your dedicated Pinata gateway host |
-| `CRAWLPAY_VAULT_UUID` | Vault demo | Vault UUID served via `/api/page` |
-| `NEXT_PUBLIC_PRIVY_APP_ID` | Auth | Privy app ID |
-| `PRIVY_APP_SECRET` | Auth | Server-side Privy JWT verification |
+Copy `.env.example` to `.env.local` and fill in:
 
-Run SQL migrations in order:
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_PRIVY_APP_ID` | Privy app ID |
+| `PRIVY_APP_SECRET` | Privy server secret |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `SUPABASE_SERVICE_KEY` | Supabase service key |
+| `NEXT_PUBLIC_SELLER_ADDRESS` | Your wallet address (receives payments) |
+| `CRAWLPAY_API_KEY_ONCHAIN` | `true` for real on-chain settlement |
+| `PINATA_JWT` | Pinata token (CDR vault only) |
+| `STORY_PRIVATE_KEY` | Story wallet (CDR vault only) |
 
-1. `supabase/migrations/20260527000000_auth_tables.sql` — `api_keys`, `vault_ownership`, `auth_rate_limits`
-2. `supabase/migrations/20260528120000_api_key_usage.sql` — daily spend limits for agent API keys
-3. `supabase/migrations/20260528130000_api_keys_wallet.sql` — wallet address on keys (Base balance gate)
-
-Agents use `Authorization: Bearer cr_live_…` on `GET /api/page` (bot User-Agent). Server enforces key limits **and** owner Base USDC balance. Optional `CRAWLPAY_API_KEY_ONCHAIN=true` sends USDC on Base per hit. Arc/x402 headers remain separate — see [docs/AGENTS.md](docs/AGENTS.md).
+Run Supabase migrations in order:
+1. `20260527000000_auth_tables.sql`
+2. `20260528120000_api_key_usage.sql`
+3. `20260528130000_api_keys_wallet.sql`
 
 ---
 
-## Live Stats
+## Security Notes
 
-- **2430+ transactions** on Arc Testnet
-- **11 unique bot types** detected and charged
-- **Real-time dashboard** — Supabase Realtime + polling
-- **Gateway balance** display alongside payment history
+**Current bot detection** uses User-Agent matching - sufficient for
+hackathon and early production, not for adversarial environments.
+
+**Planned:** cryptographic request verification, IP range allowlists
+for known AI crawlers, and anomaly detection to prevent fraud.
+
+**Agent-side protection:** API keys support per-request and daily
+USDC limits — agents control their own exposure.
 
 ---
 
 ## Roadmap
 
-**Done**
+**Done:**
 - [x] Bot detection (11 AI crawlers)
 - [x] HTTP 402 + x402 protocol
-- [x] Circle Nanopayments on Arc Testnet
-- [x] Real-time dashboard with Supabase Realtime
+- [x] Base Mainnet USDC payments (on-chain)
+- [x] API Keys system (full cycle)
+- [x] MCP server (Base MCP plugin)
+- [x] Privy embedded wallets
+- [x] Real-time dashboard (Supabase Realtime)
 - [x] CDR vault integration (Story Protocol)
-- [x] Exa autonomous agent demo (live API)
+- [x] ElizaOS plugin
 - [x] Dynamic pricing per path
-- [x] Express + Cloudflare Workers SDK adapters
-- [x] ElizaOS plugin + MCP server
-- [x] Privy auth (Google, Twitter, GitHub, Telegram)
-- [x] Modular architecture (arc / cdr / payments / detection)
+- [x] Express + Cloudflare Workers adapters
 
-**Next**
-- [ ] npm publish `@crawlpay/sdk`
-- [ ] Arc Mainnet
-- [ ] Tempo, Arbitrum, Solana networks 
-- [ ] The Graph subgraph
-- [ ] Ghost CMS + WordPress plugins
+**Next:**
+- [ ] ERC-8257 registration (OpenSea Agent Tool Registry)
 - [ ] crawlpay.json open standard
+- [ ] Anti-fraud / Sybil protection (IP ranges, rate limits, anomaly detection)
+- [ ] The Graph subgraph (on-chain indexing)
+- [ ] Cross-chain gateway (Li.Fi/LayerZero)
+- [ ] Gasless deposits (EIP-3009)
+- [ ] PIL license integration (Story Protocol)
+- [ ] Ghost CMS + WordPress plugins
+- [ ] LangChain + LlamaIndex loaders
+- [ ] Pay-per-Query Vector DB (Pinecone/Qdrant proxy)
 
 ---
 
