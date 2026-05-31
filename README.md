@@ -22,8 +22,17 @@ CrawlPay is for everyone else.
 Agent sends Bearer token → server checks Base USDC balance → settles on-chain via Privy → content delivered.
 
 ```
-Agent → GET /api/page + Authorization: Bearer cr_live_... + User-Agent: GPTBot
-Server → verify key → check Base balance → settle USDC ← 200 + content + tx_hash
+Agent  →  GET /api/page
+          Authorization: Bearer cr_live_...
+          User-Agent: GPTBot
+
+Server →  verify key
+       →  check Base USDC balance
+       →  settle on-chain (Privy)
+
+Server ←→ Base Mainnet (tx confirmed)
+
+Agent  ←  200 OK + content + tx_hash
 
 ```
 
@@ -65,32 +74,17 @@ Inputs: `url` (string), `amount` (string, e.g. "0.001")
 
 ---
 
-## Vault Mode — Story Protocol CDR
-
-Standard mode gates public pages. Vault mode goes further.
-
-**What is CDR (Confidential Data Rooms)?**
-
-Story Protocol's CDR stores content that doesn't exist in plaintext anywhere.
-Datasets are cryptographically locked on IPFS + Story Aeneid chain.
-Content decrypts only after payment clears — no trusted middleman.
-
-**Why use it:**
-
-- Private datasets — training data, research, proprietary content
-- Provable access control — payment IS the access condition
-- Revoke anytime — remove access without changing content
-- AI-native — agents pay and decrypt in one flow
-
-**How it works:**
-
 ### Vault Mode (Story CDR)
 
 Standard mode gates public pages. Vault mode goes further — content that doesn't exist in plaintext anywhere. Datasets stored in Story Protocol CDR vaults, cryptographically locked until payment clears.
 
 ```
-Bot → GET /api/page + X-CrawlPay-Vault: {uuid}
-    ← 402 + X-Payment-Required
+Bot    → GET /api/page
+       ← 402 + payment manifest
+
+Bot    → GET /api/page + payment-signature
+Server → verifySignature → savePayment
+       ← 200 + content
 
 Bot → GET /api/page + payment-signature
 Server → verifySignature → CDR.accessVault(uuid)
@@ -220,7 +214,7 @@ USDC limits — agents control their own exposure.
 
 **Next:**
 - [ ] ERC-8257 registration (OpenSea Agent Tool Registry)
-- [ ] crawlpay.json open standard
+- [ ] crawlpay.json open standard (like robots.txt for AI payments)
 - [ ] Anti-fraud / Sybil protection (IP ranges, rate limits, anomaly detection)
 - [ ] The Graph subgraph (on-chain indexing)
 - [ ] Cross-chain gateway (Li.Fi/LayerZero)
