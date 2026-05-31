@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireDashboardAuth } from "@/lib/auth/require-dashboard";
 import { supabase } from "@/lib/payments/supabase";
 
 export const dynamic = "force-dynamic";
@@ -11,9 +10,6 @@ function parsePositiveInt(value: string | null, fallback: number): number {
 }
 
 export async function GET(req: NextRequest) {
-  const auth = await requireDashboardAuth(req);
-  if (!auth.ok) return auth.response;
-
   const { searchParams } = new URL(req.url);
   const page = parsePositiveInt(searchParams.get("page"), 1);
   const limit = parsePositiveInt(searchParams.get("limit"), 100);

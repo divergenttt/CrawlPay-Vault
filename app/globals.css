@@ -272,6 +272,10 @@ body:has(#privy-dialog-backdrop) .nav.scrolled {
   background: var(--c-red);
   box-shadow: 0 0 8px var(--c-red);
 }
+.nav-dropdown-menu-inner a .dot.vault {
+  background: #9d8fff;
+  box-shadow: 0 0 8px #9d8fff;
+}
 .nav-connect {
   position: relative;
   display: flex;

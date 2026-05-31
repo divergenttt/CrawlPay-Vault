@@ -1,5 +1,8 @@
 "use client";
 
+const GITHUB_REPO = "https://github.com/divergenttt/CrawlPay-Vault";
+const GITHUB_SDK = "https://github.com/divergenttt/CrawlPay-Vault-SDK";
+
 export function CtaSection() {
   return (
     <section className="cta">
@@ -14,20 +17,12 @@ export function CtaSection() {
         <div className="cta-body fade-up delay-1">
           <p>Permissionless. MIT-licensed. Your content monetized while you sleep.</p>
           <div className="cta-buttons">
-            <a
-              href="https://github.com/divergenttt/CrawlPay#readme"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={`${GITHUB_REPO}#readme`} target="_blank" rel="noopener noreferrer">
               <button type="button" className="btn-primary">
                 Read the spec →
               </button>
             </a>
-            <a
-              href="https://github.com/divergenttt/CrawlPay"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={GITHUB_REPO} target="_blank" rel="noopener noreferrer">
               <button type="button" className="btn-outline">
                 Star on GitHub
               </button>
@@ -45,13 +40,13 @@ export function Footer() {
     <footer className="footer">
       <div>CrawlPay · MIT · 2026</div>
       <div className="footer-links">
-        <a href="https://github.com/divergenttt/CrawlPay" target="_blank" rel="noopener noreferrer">
+        <a href={GITHUB_REPO} target="_blank" rel="noopener noreferrer">
           GitHub
         </a>
         <a href="/dashboard" data-page-link>
           Dashboard
         </a>
-        <a href="https://github.com/divergenttt/CrawlPay" target="_blank" rel="noopener noreferrer">
+        <a href={GITHUB_SDK} target="_blank" rel="noopener noreferrer">
           SDK
         </a>
         <a href="https://arc.network" target="_blank" rel="noopener noreferrer">

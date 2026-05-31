@@ -1,5 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
-import { requireDashboardAuth } from "@/lib/auth/require-dashboard";
+import { NextResponse } from "next/server";
 import { supabase } from "@/lib/payments/supabase";
 import type { DashboardStats } from "@/lib/types";
 
@@ -49,10 +48,7 @@ function computeStats(payments: PaymentStatsRow[]): DashboardStats {
   };
 }
 
-export async function GET(req: NextRequest) {
-  const auth = await requireDashboardAuth(req);
-  if (!auth.ok) return auth.response;
-
+export async function GET() {
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const { data, error } = await supabase

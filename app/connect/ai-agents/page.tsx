@@ -38,6 +38,9 @@ const MCP_JSON = `{
   }
 }`;
 
+const MCP_TEST_PROMPT =
+  "Use handle_payment_required tool to access https://crawl-pay.com/api/page with amount 0.001";
+
 const ELIZA_BASH = `npm install @crawlpay/eliza-plugin`;
 const ELIZA_TS = `import { crawlpayPlugin } from "@crawlpay/eliza-plugin";
 import { AgentRuntime } from "@elizaos/core";
@@ -52,6 +55,7 @@ const LANG_META = {
   json: { label: "JSON", color: "#ffb86c" },
   bash: { label: "Bash", color: "#4af0a8" },
   ts: { label: "TypeScript", color: "#5e8eff" },
+  prompt: { label: "Prompt", color: "#9d8fff" },
 } as const;
 
 function highlight(code: string, lang: keyof typeof LANG_META): ReactNode[] {
@@ -76,9 +80,13 @@ function highlight(code: string, lang: keyof typeof LANG_META): ReactNode[] {
       { re: /\b[a-zA-Z_$][\w$]*(?=\()/g, cls: "c-fn" },
       { re: /\b\d+(?:\.\d+)?\b/g, cls: "c-num" },
     ],
+    prompt: [],
   };
 
   const set = rules[lang] ?? rules.ts;
+  if (set.length === 0) {
+    return [<span key={0}>{code}</span>];
+  }
   const marks: Array<{ start: number; end: number; cls: string }> = [];
   for (const { re, cls } of set) {
     re.lastIndex = 0;
@@ -130,6 +138,35 @@ function CodeBlock({ lang, source }: { lang: keyof typeof LANG_META; source: str
       </div>
       <pre className="ag-code">{highlight(source, lang)}</pre>
     </div>
+  );
+}
+
+function UiBadge({ children }: { children: ReactNode }) {
+  return <span className="ag-ui-badge">{children}</span>;
+}
+
+function InstallStep({
+  num,
+  title,
+  desc,
+  children,
+}: {
+  num: number;
+  title: string;
+  desc?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <>
+      <div className="ag-step-row">
+        <div className="ag-step-num">{num}</div>
+        <div className="ag-step-body">
+          <div className="ag-step-title">{title}</div>
+          {desc ? <div className="ag-step-desc">{desc}</div> : null}
+        </div>
+      </div>
+      {children}
+    </>
   );
 }
 
@@ -193,28 +230,97 @@ export default function ConnectAiAgentsPage() {
           </div>
 
           <div className="ag-panel">
-            <div className="ag-step-row">
-              <div className="ag-step-num">1</div>
-              <div className="ag-step-body">
-                <div className="ag-step-title">{tab === "mcp" ? "Add CrawlPay to MCP config" : "Install the plugin"}</div>
-                <div className="ag-step-desc">
-                  {tab === "mcp"
-                    ? "Open your assistant mcpServers config and add the entry below."
-                    : "Install the package and wire crawlpayPlugin in your AgentRuntime plugins array."}
-                </div>
-              </div>
-            </div>
             {tab === "mcp" ? (
               <>
-                <CodeBlock lang="json" source={MCP_JSON} />
-                <p className="ag-api-key-cta">
-                  <Link href="/connect/api-keys" data-page-link>
-                    Get your API key
-                  </Link>
-                </p>
+                <InstallStep
+                  num={1}
+                  title="Add CrawlPay to MCP config"
+                  desc="Open your assistant mcpServers config and add the entry below."
+                >
+                  <CodeBlock lang="json" source={MCP_JSON} />
+                </InstallStep>
+
+                <InstallStep
+                  num={2}
+                  title="Find your config file"
+                  desc={
+                    <>
+                      <strong>Windows:</strong>{" "}
+                      <code>%APPDATA%\Claude\claude_desktop_config.json</code>
+                      <br />
+                      <strong>Mac:</strong>{" "}
+                      <code>
+                        ~/Library/Application Support/Claude/claude_desktop_config.json
+                      </code>
+                      <br />
+                      If the file doesn&apos;t exist, create it manually.
+                    </>
+                  }
+                />
+
+                <InstallStep
+                  num={3}
+                  title="Get your API key"
+                  desc={
+                    <>
+                      Create a free{" "}
+                      <Link href="/connect/api-keys" data-page-link>
+                        API key
+                      </Link>{" "}
+                      and fund your wallet with USDC on Base.
+                    </>
+                  }
+                />
+
+                <InstallStep
+                  num={4}
+                  title="Restart Claude Desktop"
+                  desc={
+                    <>
+                      Close and reopen Claude Desktop. Go to{" "}
+                      <UiBadge>Settings</UiBadge> → <UiBadge>Developer</UiBadge>{" "}
+                      — you should see <UiBadge>crawlpay-server</UiBadge> running.
+                    </>
+                  }
+                />
+
+                <InstallStep
+                  num={5}
+                  title="Test it"
+                  desc="Ask Claude to test the tool:"
+                >
+                  <CodeBlock lang="prompt" source={MCP_TEST_PROMPT} />
+                </InstallStep>
+
+                <div className="ag-warn-note" role="note">
+                  <span className="ag-warn-badge">Note</span>
+                  <p>
+                    npm publish coming soon. Install from GitHub:{" "}
+                    <a
+                      href="https://github.com/divergenttt/CrawlPay-MCP"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      divergenttt/CrawlPay-MCP
+                    </a>
+                    — clone the repo, run <code>npm install &amp;&amp; npm run build</code>,
+                    then set <code>command</code> to <code>node</code> and{" "}
+                    <code>args</code> to the path of <code>dist/index.js</code>.
+                  </p>
+                </div>
               </>
             ) : (
               <>
+                <div className="ag-step-row">
+                  <div className="ag-step-num">1</div>
+                  <div className="ag-step-body">
+                    <div className="ag-step-title">Install the plugin</div>
+                    <div className="ag-step-desc">
+                      Install the package and wire crawlpayPlugin in your AgentRuntime
+                      plugins array.
+                    </div>
+                  </div>
+                </div>
                 <CodeBlock lang="bash" source={ELIZA_BASH} />
                 <div style={{ height: 16 }} />
                 <CodeBlock lang="ts" source={ELIZA_TS} />

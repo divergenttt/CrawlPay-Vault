@@ -7,10 +7,14 @@ import { useScrolled } from "@/lib/hooks";
 
 const NAV_SECTIONS = ["protocol", "flow", "sdk"] as const;
 
-const CONNECT_ROUTES = [
-  "/connect/ai-agents",
-  "/connect/api-keys",
-  "/connect/web-sdk",
+const GITHUB_REPO = "https://github.com/divergenttt/CrawlPay-Vault";
+const X_URL = "https://x.com/crawlpay";
+
+const CONNECT_LINKS = [
+  { href: "/connect/ai-agents", label: "MCP & Plugins", dot: "ai" },
+  { href: "/connect/api-keys", label: "API Keys", dot: "api" },
+  { href: "/connect/web-sdk", label: "Web SDK", dot: "web" },
+  { href: "/connect/vault", label: "Vault", dot: "vault" },
 ] as const;
 
 export function Nav() {
@@ -91,32 +95,27 @@ export function Nav() {
             </button>
             <div className="nav-dropdown-menu" role="menu">
               <div className="nav-dropdown-menu-inner">
-                {CONNECT_ROUTES.map((href, i) => (
+                {CONNECT_LINKS.map((item) => (
                   <Link
-                    key={href}
-                    href={href}
+                    key={item.href}
+                    href={item.href}
                     prefetch
                     data-page-link
                     role="menuitem"
                     onMouseEnter={warmPrivy}
                   >
-                    <span className={`dot ${["ai", "api", "web"][i]}`} />
-                    {href === "/connect/ai-agents"
-                      ? "MCP & Plugins"
-                      : href === "/connect/api-keys"
-                        ? "API Keys"
-                        : "Web SDK"}
+                    <span className={`dot ${item.dot}`} />
+                    {item.label}
                   </Link>
                 ))}
               </div>
             </div>
           </div>
-          <a
-            href="https://github.com/divergenttt/CrawlPay"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={GITHUB_REPO} target="_blank" rel="noopener noreferrer">
             GitHub ↗
+          </a>
+          <a href={X_URL} target="_blank" rel="noopener noreferrer">
+            X ↗
           </a>
         </div>
       </div>

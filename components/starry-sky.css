@@ -1,0 +1,39 @@
+.starry-sky {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.starry-sky-star {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  opacity: 0.06;
+  transform: scale(0.75);
+  animation-name: starry-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes starry-twinkle {
+  0%,
+  100% {
+    opacity: 0.04;
+    transform: scale(0.7);
+  }
+  45%,
+  55% {
+    opacity: var(--star-peak, 0.35);
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .starry-sky-star {
+    animation: none;
+    opacity: 0.12;
+  }
+}

@@ -6,9 +6,8 @@ import { DashboardChart } from "@/components/dashboard/dashboard-chart";
 import { DashboardPaymentsTable } from "@/components/dashboard/dashboard-payments-table";
 import { LogoMark } from "@/components/logo-mark";
 import { PageTransition } from "@/components/page-transition";
-import { authFetch } from "@/lib/auth/client";
 import { useClock, useCursor } from "@/lib/hooks";
-import { createClient } from "@/lib/payments/supabase";
+import { createClient } from "@/lib/payments/supabase-browser";
 import type {
   ChartDay,
   DashboardStats,
@@ -38,7 +37,9 @@ function formatBalanceUsdc(
   hasError: boolean
 ): string {
   if (hasError || amount == null) return "—";
-  return amount;
+  const n = parseFloat(amount);
+  if (!Number.isFinite(n)) return amount;
+  return n.toFixed(3);
 }
 
 function dateKeyLocal(d: Date): string {
@@ -141,7 +142,7 @@ export default function DashboardPage() {
 
   async function fetchBalance() {
     try {
-      const res = await authFetch(`/api/balance?t=${Date.now()}`, {
+      const res = await fetch(`/api/balance?t=${Date.now()}`, {
         cache: "no-store",
         headers: { "Cache-Control": "no-cache" },
       });
@@ -172,7 +173,10 @@ export default function DashboardPage() {
 
   async function fetchStats() {
     try {
-      const res = await authFetch("/api/stats", { cache: "no-store" });
+      const res = await fetch(`/api/stats?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
       if (!res.ok) {
         console.error("Stats fetch error:", res.status, res.statusText);
         return;
@@ -186,7 +190,7 @@ export default function DashboardPage() {
 
   async function fetchData() {
     try {
-      const res = await authFetch(
+      const res = await fetch(
         `/api/payments?page=1&limit=100&t=${Date.now()}`,
         {
           cache: "no-store",
@@ -207,7 +211,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 15000);
+    const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
   }, []);
 
