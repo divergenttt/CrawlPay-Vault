@@ -273,23 +273,6 @@ export default function ConnectVaultPage() {
             </div>
             <CodeBlock source={ACCESS_TS} label="accessVault()" />
           </div>
-
-          <div className="vl-cta">
-            <div className="vl-cta-copy">
-              <div className="vl-cta-title">Ready to seal your first dataset?</div>
-              <div className="vl-cta-sub">
-                Run the upload script locally with your Story wallet and Pinata credentials.
-              </div>
-            </div>
-            <a
-              className="cn-btn solid"
-              href="https://github.com/divergenttt/CrawlPay-Vault/blob/main/scripts/upload-vault.ts"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Upload your first vault
-            </a>
-          </div>
         </section>
 
         <div className="cn-foot">
