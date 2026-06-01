@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { ConnectSiteHeader } from "@/components/connect/connect-site-header";
+import { VaultUploader } from "@/components/connect/vault-uploader";
 import { PageTransition } from "@/components/page-transition";
 import { useCursor } from "@/lib/hooks";
 import "../connect.css";
@@ -183,6 +184,14 @@ export default function ConnectVaultPage() {
               then TDH2 threshold decryption unlocks access.
             </p>
           </div>
+        </section>
+
+        <section className="cn-section">
+          <div className="cn-section-head">
+            <h2 className="cn-section-title">Try vault mode</h2>
+            <span className="cn-section-sub">presentation · story cdr</span>
+          </div>
+          <VaultUploader />
         </section>
 
         <section className="cn-section">
