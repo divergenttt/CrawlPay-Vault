@@ -9,7 +9,7 @@ const sellerAddress = process.env.NEXT_PUBLIC_SELLER_ADDRESS?.trim();
 const paywall = crawlpay({
   wallet: sellerAddress ?? "",
   price: "0.001",
-  network: "arcTestnet",
+  network: "base",
 });
 
 export function middleware(request: NextRequest) {
