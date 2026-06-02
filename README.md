@@ -198,15 +198,6 @@ Agents use `Authorization: Bearer cr_live_…` on `GET /api/page` (bot User-Agen
 
 ---
 
-## Live Stats
-
-- **2430+ transactions** on Arc Testnet
-- **11 unique bot types** detected and charged
-- **Real-time dashboard** — Supabase Realtime + polling
-- **Gateway balance** display alongside payment history
-
----
-
 ## Roadmap
 
 **Done**
@@ -226,7 +217,6 @@ Agents use `Authorization: Bearer cr_live_…` on `GET /api/page` (bot User-Agen
 - [x] Modular architecture (arc / cdr / payments / detection)
 
 **Next**
-- [ ] npm publish `@crawlpay/sdk`
 - [ ] ERC-8257 registration (OpenSea Agent Tool Registry)
 - [ ] crawlpay.json open standard (like robots.txt for AI payments)
 - [ ] Anti-fraud / Sybil protection (IP ranges, rate limits, anomaly detection)
