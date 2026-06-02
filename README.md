@@ -198,15 +198,6 @@ Agents use `Authorization: Bearer cr_live_…` on `GET /api/page` (bot User-Agen
 
 ---
 
-## Live Stats
-
-- **2430+ transactions** on Arc Testnet
-- **11 unique bot types** detected and charged
-- **Real-time dashboard** — Supabase Realtime + polling
-- **Gateway balance** display alongside payment history
-
----
-
 ## Roadmap
 
 **Done**
