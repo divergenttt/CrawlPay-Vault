@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { ConnectSiteHeader } from "@/components/connect/connect-site-header";
+import { VaultBotPayContextFromEnv } from "@/components/connect/vault-bot-pay-demo";
 import { VaultUploader } from "@/components/connect/vault-uploader";
 import { PageTransition } from "@/components/page-transition";
 import { useCursor } from "@/lib/hooks";
@@ -189,8 +190,9 @@ export default function ConnectVaultPage() {
         <section className="cn-section">
           <div className="cn-section-head">
             <h2 className="cn-section-title">Try vault mode</h2>
-            <span className="cn-section-sub">presentation · story cdr</span>
+            <span className="cn-section-sub">live upload · story cdr</span>
           </div>
+          <VaultBotPayContextFromEnv />
           <VaultUploader />
         </section>
 

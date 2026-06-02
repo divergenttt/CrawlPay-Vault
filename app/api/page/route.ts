@@ -8,6 +8,10 @@ import {
   settleApiKeyPayment,
 } from "@/lib/auth/api-key-access";
 import { getApiKeyTokenFromRequest } from "@/lib/auth/api-key-request";
+import {
+  decryptVaultContent,
+  resolveVaultUuidFromRequest,
+} from "@/lib/cdr/vault-content";
 import { verifyArcSignature } from "@/lib/payments/gateway";
 import { savePayment } from "@/lib/payments/supabase";
 
@@ -41,28 +45,6 @@ function successResponse(botName: string, tx_hash: string) {
     paid: AMOUNT_USDC,
     tx_hash,
   });
-}
-
-async function fetchVaultContent(
-  uuid: number,
-  req: NextRequest
-): Promise<{ content: unknown } | null> {
-  const vaultUrl = new URL("/api/vault", req.url);
-  const res = await fetch(vaultUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ uuid }),
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    const errBody = await res.text();
-    console.error("Vault API fetch failed:", res.status, errBody);
-    return null;
-  }
-
-  const data = (await res.json()) as { content?: unknown };
-  return data.content !== undefined ? { content: data.content } : null;
 }
 
 function paymentRequiredResponse(botName: string) {
@@ -159,7 +141,7 @@ export async function GET(req: NextRequest) {
     tx_hash = generateSimulatedTxHash();
   }
 
-  const vaultHeader = getHeader(req, "x-crawlpay-vault", "X-CrawlPay-Vault");
+  const vaultUuid = resolveVaultUuidFromRequest(req);
 
   try {
     await savePayment({
@@ -170,21 +152,31 @@ export async function GET(req: NextRequest) {
       tx_hash,
     });
 
-    if (vaultHeader) {
-      const vault = await fetchVaultContent(Number(vaultHeader), req);
-      if (!vault) {
+    if (vaultUuid != null) {
+      try {
+        const content = await decryptVaultContent(vaultUuid);
+        return NextResponse.json({
+          message: "Access granted",
+          mode: "vault",
+          vault_uuid: vaultUuid,
+          content,
+          tx_hash,
+          bot: botName,
+        });
+      } catch (err) {
+        console.error(
+          "Vault decrypt failed:",
+          err instanceof Error ? err.message : err
+        );
         return NextResponse.json(
-          { error: "Vault unavailable", tx_hash },
+          {
+            error:
+              err instanceof Error ? err.message : "Vault decryption failed",
+            tx_hash,
+          },
           { status: 503 }
         );
       }
-      return NextResponse.json({
-        message: "Access granted",
-        mode: "vault",
-        content: vault.content,
-        tx_hash,
-        bot: botName,
-      });
     }
 
     return successResponse(botName, tx_hash);

@@ -3,6 +3,7 @@ import path from "path";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
+/** Run: npm run vault:test  (requires CRAWLPAY_VAULT_UUID in .env.local) */
 async function main() {
   const uuid = process.env.CRAWLPAY_VAULT_UUID;
   if (!uuid) {

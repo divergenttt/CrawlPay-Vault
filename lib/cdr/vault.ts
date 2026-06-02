@@ -4,6 +4,7 @@ import { getCDRClient } from "./client";
 
 const PINATA_API_URL = "https://api.pinata.cloud";
 const PINATA_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs";
+const VAULT_IPFS_FILENAME = "crawlpay-vault-content.bin";
 const STORY_TIME_CONDITION_ADDRESS =
   "0x0000000000000000000000000000000000000000" as const;
 
@@ -35,6 +36,14 @@ function getPinataJwt(): string {
   return jwt;
 }
 
+function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
 class PinataStorageProvider implements VaultStorageProvider {
   private readonly authHeaders: HeadersInit;
 
@@ -45,10 +54,11 @@ class PinataStorageProvider implements VaultStorageProvider {
   async upload(data: Uint8Array, _options?: { pin?: boolean }): Promise<string> {
     const formData = new FormData();
     const fileBytes = new Uint8Array(data);
+    formData.append("file", new Blob([fileBytes]), VAULT_IPFS_FILENAME);
+    // Pinata defaults wrapWithDirectory: true — root CID ≠ file CID and CDR CID check fails.
     formData.append(
-      "file",
-      new Blob([fileBytes]),
-      "crawlpay-vault-content.bin"
+      "pinataOptions",
+      JSON.stringify({ wrapWithDirectory: false, cidVersion: 1 })
     );
 
     const response = await fetch(`${PINATA_API_URL}/pinning/pinFileToIPFS`, {
@@ -69,7 +79,26 @@ class PinataStorageProvider implements VaultStorageProvider {
       throw new Error("Pinata upload response missing IpfsHash");
     }
 
-    return result.IpfsHash;
+    const cid = result.IpfsHash;
+
+    let roundTrip: Uint8Array;
+    try {
+      roundTrip = await this.download(cid);
+    } catch (error) {
+      throw new Error(
+        `IPFS pin succeeded (${cid}) but gateway read-back failed — check PINATA_GATEWAY: ${formatCause(error)}`,
+        { cause: error }
+      );
+    }
+
+    if (!bytesEqual(fileBytes, roundTrip)) {
+      throw new Error(
+        `IPFS CID mismatch after pin (got ${roundTrip.length} bytes, expected ${fileBytes.length}). ` +
+          "Ensure PINATA_GATEWAY points to your Pinata dedicated gateway."
+      );
+    }
+
+    return cid;
   }
 
   async download(cid: string): Promise<Uint8Array> {
@@ -133,11 +162,20 @@ function getTimeConditionData(timestamp: bigint): `0x${string}` {
 }
 
 function formatCause(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  if (error && typeof error === "object" && "message" in error) {
-    return String((error as { message: unknown }).message);
+  const parts: string[] = [];
+  let cur: unknown = error;
+  for (let depth = 0; depth < 4 && cur; depth++) {
+    if (cur instanceof Error) {
+      if (cur.message) parts.push(cur.message);
+      cur = cur.cause;
+      continue;
+    }
+    if (cur && typeof cur === "object" && "message" in cur) {
+      parts.push(String((cur as { message: unknown }).message));
+    }
+    break;
   }
-  return String(error);
+  return parts.length > 0 ? parts.join(" — ") : String(error);
 }
 
 export async function uploadVault(
@@ -151,7 +189,17 @@ export async function uploadVault(
     ]);
     const client = await getCDRClient();
     const storageProvider = createStorageProvider();
-    const globalPubKey = await client.observer.getGlobalPubKey();
+
+    let globalPubKey;
+    try {
+      globalPubKey = await client.observer.getGlobalPubKey();
+    } catch (error) {
+      throw new Error(
+        `Story DKG API failed (set STORY_API_URL to Aeneid REST, e.g. http://172.192.41.96:1317): ${formatCause(error)}`,
+        { cause: error }
+      );
+    }
+
     const sellerAddress = getStorySellerAddress();
     if (
       validUntil != null &&
@@ -174,19 +222,36 @@ export async function uploadVault(
 
     const contentBytes = new TextEncoder().encode(content);
     const { ciphertext: encryptedFile, key } = encryptFile(contentBytes);
-    const cid = await storageProvider.upload(encryptedFile, { pin: true });
+
+    let cid: string;
+    try {
+      cid = await storageProvider.upload(encryptedFile, { pin: true });
+    } catch (error) {
+      throw new Error(`IPFS pin failed (check PINATA_JWT): ${formatCause(error)}`, {
+        cause: error,
+      });
+    }
 
     const vaultPayload = JSON.stringify({ cid, key: toHex(key) });
     const payloadBytes = new TextEncoder().encode(vaultPayload);
 
-    const { uuid, txHash: allocateTx } = await client.uploader.allocate({
+    let uuid: number;
+    let allocateTx: string;
+    try {
+      ({ uuid, txHash: allocateTx } = await client.uploader.allocate({
       updatable: false,
       writeConditionAddr: OWNER_WRITE_CONDITION,
       readConditionAddr,
       writeConditionData: ownerConditionData,
       readConditionData,
       skipConditionValidation: true,
-    });
+      }));
+    } catch (error) {
+      throw new Error(
+        `Story on-chain allocate failed (check STORY_PRIVATE_KEY, gas on Aeneid): ${formatCause(error)}`,
+        { cause: error }
+      );
+    }
 
     const ciphertext = await client.uploader.encryptDataKey({
       dataKey: payloadBytes,

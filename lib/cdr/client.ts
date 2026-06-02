@@ -9,9 +9,15 @@ import {
 import { storyAeneid } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 
-/** Story-API REST base URL for CDR DKG state (not the Protocol API at api.storyapis.com). */
+/**
+ * Story-API REST base URL for CDR DKG reads (global pub key, threshold, etc.).
+ * Aeneid testnet default per Story CDR docs — not api.story.foundation.
+ * @see https://docs.story.foundation/developers/cdr-sdk/advanced-configuration
+ */
+const STORY_API_URL_TESTNET = "http://172.192.41.96:1317";
+
 const STORY_API_URL =
-  process.env.STORY_API_URL ?? "https://api.story.foundation";
+  process.env.STORY_API_URL?.trim() || STORY_API_URL_TESTNET;
 
 const STORY_RPC_URL = process.env.STORY_RPC_URL || "https://aeneid.storyrpc.io";
 

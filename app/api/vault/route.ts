@@ -1,7 +1,7 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { accessVault } from "@/lib/cdr/vault";
+import { decryptVaultContent } from "@/lib/cdr/vault-content";
 import { isVaultOwnedByUser } from "@/lib/db/vault-ownership";
 import { requirePrivyAuth } from "@/lib/auth/require-auth";
 
@@ -25,14 +25,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const decrypted = await accessVault(uuid);
-
-    let content: unknown;
-    try {
-      content = JSON.parse(decrypted) as unknown;
-    } catch {
-      content = decrypted;
-    }
+    const content = await decryptVaultContent(uuid);
 
     return NextResponse.json({ content });
   } catch (err) {
