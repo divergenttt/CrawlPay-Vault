@@ -20,7 +20,7 @@ export function VaultBotPayContext({
   const { isSignedIn } = useAuthUi();
   const embeddedWallet = useEmbeddedWalletRef();
   const walletAddress = isSignedIn ? embeddedWallet?.address : undefined;
-  const { balanceUsdc, balanceLoading, balanceError } = useArcUsdcBalance(walletAddress);
+  const { balanceUsdc, loading, error } = useArcUsdcBalance(walletAddress);
 
   return (
     <div
@@ -34,12 +34,12 @@ export function VaultBotPayContext({
       {isSignedIn && walletAddress ? (
         <p className="mt-2 font-mono text-[11px] text-zinc-500">
           wallet usdc:{" "}
-          {balanceLoading && balanceUsdc == null ? (
+          {loading && balanceUsdc == null ? (
             "…"
-          ) : balanceError ? (
+          ) : error ? (
             <span className="text-red-400/80">unavailable</span>
           ) : (
-            <span className="text-zinc-300">{formatUsdcBalance(balanceUsdc)}</span>
+            <span className="text-zinc-300">{formatUsdcBalance(balanceUsdc ?? 0)}</span>
           )}
         </p>
       ) : (
