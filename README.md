@@ -1,3 +1,6 @@
+
+<img width="1500" height="500" alt="banner png" src="https://github.com/user-attachments/assets/3d768ff2-0ea8-4f41-a782-49dabb127784" />
+
 # CrawlPay
 
 > AI bots read your site for free. Not anymore.
