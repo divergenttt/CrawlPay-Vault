@@ -8,9 +8,9 @@
 
 ## The Problem
 
-GPTBot, ClaudeBot, PerplexityBot — they crawl your site constantly. They read your articles, your docs, your research, and train models on all of it. You built that content. You get nothing back.
+GPTBot, ClaudeBot, PerplexityBot - they crawl your site constantly. They read your articles, your docs, your research, and train models on all of it. You built that content. You get nothing back.
 
-Cloudflare noticed this too and started testing pay-per-crawl — but only for Enterprise customers. Regular developers, bloggers, indie site owners? No option.
+Cloudflare noticed this too and started testing pay-per-crawl - but only for Enterprise customers. Regular developers, bloggers, indie site owners? No option.
 
 That's what CrawlPay is for.
 
@@ -40,7 +40,7 @@ Agent  ←  200 OK + content + tx_hash
 
 ### MCP Server
 
-Works with Claude Desktop, Cursor, Windsurf — any MCP-compatible assistant.
+Works with Claude Desktop, Cursor, Windsurf - any MCP-compatible assistant.
 
 **What it does:**
 - Detects HTTP 402 responses automatically
@@ -69,14 +69,14 @@ Works with Claude Desktop, Cursor, Windsurf — any MCP-compatible assistant.
 
 **Available tool:**
 
-`handle_payment_required` — call when a page returns 402.
+`handle_payment_required` - call when a page returns 402.
 Inputs: `url` (string), `amount` (string, e.g. "0.001")
 
 ---
 
 ### Vault Mode (Story CDR)
 
-Standard mode gates public pages. Vault mode goes further — content that doesn't exist in plaintext anywhere. Datasets stored in Story Protocol CDR vaults, cryptographically locked until payment clears.
+Standard mode gates public pages. Vault mode goes further - content that doesn't exist in plaintext anywhere. Datasets stored in Story Protocol CDR vaults, cryptographically locked until payment clears.
 
 ```
 Bot → GET /api/page + X-CrawlPay-Vault: {uuid}
@@ -105,7 +105,7 @@ Server → verifySignature → savePayment
 
 ### Exa + CrawlPay: Full Autonomous Loop
 
-[Exa](https://exa.ai) is a search API built for AI agents with native x402 support — same protocol as CrawlPay.
+[Exa](https://exa.ai) is a search API built for AI agents with native x402 support - same protocol as CrawlPay.
 
 ```
 Agent → Exa search ($0.007 USDC, Base network)
@@ -184,17 +184,17 @@ Run SQL migrations in order:
 2. `supabase/migrations/20260528120000_api_key_usage.sql` — daily spend limits for agent API keys
 3. `supabase/migrations/20260528130000_api_keys_wallet.sql` — wallet address on keys (Base balance gate)
 
-Agents use `Authorization: Bearer cr_live_…` on `GET /api/page` (bot User-Agent). Server enforces key limits **and** owner Base USDC balance. Optional `CRAWLPAY_API_KEY_ONCHAIN=true` sends USDC on Base per hit. Arc/x402 headers remain separate — see [docs/AGENTS.md](docs/AGENTS.md).
+Agents use `Authorization: Bearer cr_live_…` on `GET /api/page` (bot User-Agent). Server enforces key limits **and** owner Base USDC balance. Optional `CRAWLPAY_API_KEY_ONCHAIN=true` sends USDC on Base per hit. Arc/x402 headers remain separate - see [docs/AGENTS.md](docs/AGENTS.md).
 
 ---
 
 ## Security Notes
 
-**Current bot detection** uses User-Agent matching — sufficient for hackathon and early production, not for adversarial environments.
+**Current bot detection** uses User-Agent matching - sufficient for hackathon and early production, not for adversarial environments.
 
 **Planned:** cryptographic request verification, IP range allowlists for known AI crawlers, and anomaly detection to prevent fraud.
 
-**Agent-side protection:** API keys support per-request and daily USDC limits — agents control their own exposure.
+**Agent-side protection:** API keys support per-request and daily USDC limits - agents control their own exposure.
 
 ---
 
