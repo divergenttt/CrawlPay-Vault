@@ -2,7 +2,7 @@
 
 > AI bots read your site for free. Not anymore.
 
-**[crawl-pay.com](https://crawl-pay.com) · [GitHub](https://github.com/divergenttt/CrawlPay-Vault) · [SDK](https://github.com/divergenttt/CrawlPay-Vault-SDK)  · [X]([https://crawl-pay.com] (https://x.com/crawlpay)) · MIT License**
+**[crawl-pay.com](https://crawl-pay.com) · [GitHub](https://github.com/divergenttt/CrawlPay-Vault) · [SDK](https://github.com/divergenttt/CrawlPay-Vault-SDK)  · [X](https://x.com/crawlpay) · MIT License**
 
 ---
 
