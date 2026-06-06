@@ -1,11 +1,15 @@
 "use client";
 
 import { PrivyProvider } from "@privy-io/react-auth";
-import { base } from "viem/chains";
+import { base, polygon } from "viem/chains";
 import { AuthUiProvider } from "@/lib/auth/auth-ui-context";
 import { RegisterPrivyServerSigner } from "@/components/wallet/register-privy-server-signer";
+import { resolveNetworkId } from "@/lib/networks/chains";
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID!;
+const fundNetwork = resolveNetworkId(process.env.NEXT_PUBLIC_CRAWLPAY_NETWORK);
+const defaultChain = fundNetwork === "polygon" ? polygon : base;
+const supportedChains = fundNetwork === "polygon" ? [polygon, base] : [base, polygon];
 
 export function PrivyProviderClient({
   children,
@@ -28,8 +32,8 @@ export function PrivyProviderClient({
             createOnLogin: "users-without-wallets",
           },
         },
-        defaultChain: base,
-        supportedChains: [base],
+        defaultChain,
+        supportedChains,
       }}
     >
       <RegisterPrivyServerSigner />

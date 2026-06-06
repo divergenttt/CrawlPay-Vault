@@ -23,7 +23,7 @@ That's what CrawlPay is for.
 
 ### API Key Mode (primary)
 
-Agent sends Bearer token → server checks Base USDC balance → settles on-chain via Privy → content delivered.
+Agent sends Bearer token → server checks USDC balance on **Base** or **Polygon** → settles on-chain via Privy → content delivered.
 
 ```
 Agent  →  GET /api/page
@@ -31,10 +31,10 @@ Agent  →  GET /api/page
           User-Agent: GPTBot
 
 Server →  verify key
-       →  check Base USDC balance
+       →  check USDC balance (Base or Polygon)
        →  settle on-chain (Privy)
 
-Server ←→ Base Mainnet (tx confirmed)
+Server ←→ Base or Polygon Mainnet (tx confirmed)
 
 Agent  ←  200 OK + content + tx_hash
 ```
@@ -126,11 +126,34 @@ npx tsx scripts/exa-crawlpay-agent.ts "AI payment infrastructure x402"
 
 ---
 
+## Supported Networks
+
+| Network | Chain ID | USDC | Circle Gateway | Explorer |
+|---------|----------|------|----------------|----------|
+| **Base** (default) | 8453 | `0x833589…2913` | Yes | [basescan.org](https://basescan.org) |
+| **Polygon PoS** | 137 | `0x3c499c…3359` | Yes | [polygonscan.com](https://polygonscan.com) |
+
+Set `CRAWLPAY_NETWORK=polygon` (server) and matching `NEXT_PUBLIC_*` RPC/USDC vars for Polygon settlement. Default remains **Base** for backwards compatibility.
+
+### SDK / middleware
+
+```typescript
+import { crawlpay } from "@crawlpay/sdk";
+
+export const paywall = crawlpay({
+  wallet: "0xYourSellerAddress",
+  price: "0.001",
+  network: "polygon", // optional — "base" | "polygon", default "base"
+});
+```
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Payment network | Base Mainnet (USDC) |
+| Payment network | Base Mainnet · Polygon PoS (USDC) |
 | Payment protocol | x402 |
 | Auth | Privy |
 | Embedded wallets | Privy (Base) |
@@ -174,7 +197,11 @@ Copy `.env.example` to `.env.local` and fill in:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key |
 | `SUPABASE_SERVICE_KEY` | Yes | Supabase service key |
 | `NEXT_PUBLIC_SELLER_ADDRESS` | Yes | Wallet address (receives payments) |
-| `CRAWLPAY_API_KEY_ONCHAIN` | No | `true` for real on-chain Base settlement |
+| `CRAWLPAY_NETWORK` | No | Settlement network: `base` (default) or `polygon` |
+| `NEXT_PUBLIC_CRAWLPAY_NETWORK` | No | Client UI network hint (match `CRAWLPAY_NETWORK`) |
+| `NEXT_PUBLIC_RPC_POLYGON` | Polygon | Default `https://polygon-rpc.com` |
+| `NEXT_PUBLIC_USDC_POLYGON` | Polygon | Native USDC on Polygon PoS |
+| `CRAWLPAY_API_KEY_ONCHAIN` | No | `true` for real on-chain settlement |
 | `STORY_PRIVATE_KEY` | CDR vaults | Story Aeneid wallet private key |
 | `STORY_API_URL` | No | Story-API REST endpoint (default: testnet node) |
 | `PINATA_JWT` | Vault uploads | Pinata API token for IPFS |
@@ -207,6 +234,7 @@ Agents use `Authorization: Bearer cr_live_…` on `GET /api/page` (bot User-Agen
 - [x] Bot detection (11 AI crawlers)
 - [x] HTTP 402 + x402 protocol
 - [x] Base Mainnet USDC payments (on-chain)
+- [x] Polygon PoS USDC payments (on-chain)
 - [x] API Keys system (full cycle)
 - [x] MCP server (Base MCP plugin)
 - [x] Circle Nanopayments on Arc Testnet

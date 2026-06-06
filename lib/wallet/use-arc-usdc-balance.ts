@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   fetchArcUsdcBalance,
-  fetchBaseEthBalance,
+  fetchNativeBalance,
 } from "@/lib/wallet/arc-usdc";
 
 /** Background refresh interval — avoid hammering public RPC endpoints. */
@@ -47,7 +47,7 @@ export function useArcUsdcBalance(walletAddress: string | undefined) {
     try {
       const [usdcResult, ethResult] = await Promise.allSettled([
         fetchArcUsdcBalance(walletAddress),
-        fetchBaseEthBalance(walletAddress),
+        fetchNativeBalance(walletAddress),
       ]);
 
       if (!mountedRef.current) return;

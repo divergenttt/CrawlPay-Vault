@@ -320,6 +320,57 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+/* Network filter + badges */
+.db-network-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: rgba(0, 0, 0, 0.25);
+}
+.db-network-opt {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray);
+  background: transparent;
+  border: none;
+  border-radius: 100px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.db-network-opt:hover { color: var(--white); }
+.db-network-opt.is-active {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.08);
+}
+.db-network-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.db-network-badge--base {
+  color: #5e8eff;
+  border-color: rgba(94, 142, 255, 0.35);
+  background: rgba(94, 142, 255, 0.08);
+}
+.db-network-badge--polygon {
+  color: #9d8fff;
+  border-color: rgba(157, 143, 255, 0.35);
+  background: rgba(157, 143, 255, 0.08);
+}
+
 /* Responsive */
 @media (max-width: 1100px) {
   .db-shell { padding: 64px 28px 64px; }
@@ -331,7 +382,7 @@
   .db-grid-2 { grid-template-columns: 1fr; }
   .db-header { flex-direction: column; align-items: flex-start; }
   .db-card-value { font-size: 30px; }
-  .db-table th:nth-child(4), .db-table td:nth-child(4) { display: none; }
+  .db-table th:nth-child(5), .db-table td:nth-child(5) { display: none; }
 }
 
 /* ============================ COMING SOON ============================ */

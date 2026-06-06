@@ -6,11 +6,14 @@ import {
   useFundWallet,
   usePrivy,
 } from "@privy-io/react-auth";
-import { base } from "viem/chains";
+import { getNetworkConfig, resolveNetworkId } from "@/lib/networks/chains";
 import { formatEthBalance, formatUsdcBalance } from "@/lib/wallet/arc-usdc";
 import { useEmbeddedWalletAddress } from "@/lib/wallet/use-embedded-wallet-address";
 
-const FUND_CHAIN_ID = Number(process.env.NEXT_PUBLIC_FUND_CHAIN_ID || base.id);
+const fundNetwork = resolveNetworkId(process.env.NEXT_PUBLIC_CRAWLPAY_NETWORK);
+const FUND_CHAIN_ID = Number(
+  process.env.NEXT_PUBLIC_FUND_CHAIN_ID || getNetworkConfig(fundNetwork).chainId
+);
 
 function shortAddress(address: string): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;

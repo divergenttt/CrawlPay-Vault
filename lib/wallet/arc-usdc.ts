@@ -6,38 +6,32 @@ import {
   http,
   type Address,
 } from "viem";
-import { base, baseSepolia } from "viem/chains";
+import {
+  getActiveNetworkConfig,
+  getNetworkConfig,
+  type CrawlPayNetworkId,
+} from "@/lib/networks/chains";
 
-const FUND_CHAIN_ID = Number(process.env.NEXT_PUBLIC_FUND_CHAIN_ID || base.id);
+function clientForNetwork(networkId?: CrawlPayNetworkId | null) {
+  const config = getNetworkConfig(networkId);
+  return createPublicClient({
+    chain: config.viemChain,
+    transport: http(config.rpc, {
+      timeout: 25_000,
+      retryCount: 2,
+      retryDelay: 500,
+    }),
+  });
+}
 
-const RPC =
-  process.env.NEXT_PUBLIC_RPC_BASE?.trim() ||
-  process.env.NEXT_PUBLIC_RPC?.trim() ||
-  "https://mainnet.base.org";
-
-/** USDC on Base (mainnet or Sepolia via env). */
-const USDC_ADDRESS = (
-  process.env.NEXT_PUBLIC_USDC_BASE?.trim() ||
-  process.env.NEXT_PUBLIC_USDC?.trim() ||
-  (FUND_CHAIN_ID === base.id
-    ? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
-    : "0x036CbD53842c542663c958E1727696A1bc3994dd")
-) as Address;
-
-const chain = FUND_CHAIN_ID === base.id ? base : baseSepolia;
-
-const publicClient = createPublicClient({
-  chain,
-  transport: http(RPC, {
-    timeout: 25_000,
-    retryCount: 2,
-    retryDelay: 500,
-  }),
-});
-
-async function readBalanceOnce(walletAddress: string): Promise<bigint> {
+async function readBalanceOnce(
+  walletAddress: string,
+  networkId?: CrawlPayNetworkId | null
+): Promise<bigint> {
+  const config = getNetworkConfig(networkId);
+  const publicClient = clientForNetwork(networkId);
   return publicClient.readContract({
-    address: USDC_ADDRESS,
+    address: config.usdcAddress,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: [walletAddress as Address],
@@ -45,14 +39,16 @@ async function readBalanceOnce(walletAddress: string): Promise<bigint> {
 }
 
 export async function fetchArcUsdcBalance(
-  walletAddress: string
+  walletAddress: string,
+  networkId?: CrawlPayNetworkId | null
 ): Promise<number> {
+  const id = networkId ?? getActiveNetworkConfig().id;
   try {
-    const raw = await readBalanceOnce(walletAddress);
+    const raw = await readBalanceOnce(walletAddress, id);
     return parseFloat(formatUnits(raw, 6));
   } catch {
     await new Promise((r) => setTimeout(r, 800));
-    const raw = await readBalanceOnce(walletAddress);
+    const raw = await readBalanceOnce(walletAddress, id);
     return parseFloat(formatUnits(raw, 6));
   }
 }
@@ -64,21 +60,34 @@ export function formatUsdcBalance(amount: number): string {
   return amount.toFixed(3);
 }
 
-async function readEthBalanceOnce(walletAddress: string): Promise<bigint> {
+async function readEthBalanceOnce(
+  walletAddress: string,
+  networkId?: CrawlPayNetworkId | null
+): Promise<bigint> {
+  const publicClient = clientForNetwork(networkId);
   return publicClient.getBalance({ address: walletAddress as Address });
 }
 
-export async function fetchBaseEthBalance(
-  walletAddress: string
+export async function fetchNativeBalance(
+  walletAddress: string,
+  networkId?: CrawlPayNetworkId | null
 ): Promise<number> {
+  const id = networkId ?? getActiveNetworkConfig().id;
   try {
-    const raw = await readEthBalanceOnce(walletAddress);
+    const raw = await readEthBalanceOnce(walletAddress, id);
     return parseFloat(formatEther(raw));
   } catch {
     await new Promise((r) => setTimeout(r, 800));
-    const raw = await readEthBalanceOnce(walletAddress);
+    const raw = await readEthBalanceOnce(walletAddress, id);
     return parseFloat(formatEther(raw));
   }
+}
+
+/** @deprecated Use fetchNativeBalance — kept for Base-specific call sites. */
+export async function fetchBaseEthBalance(
+  walletAddress: string
+): Promise<number> {
+  return fetchNativeBalance(walletAddress, "base");
 }
 
 export function formatEthBalance(amountEth: number): string {

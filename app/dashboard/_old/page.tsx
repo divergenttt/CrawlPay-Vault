@@ -4,6 +4,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { DashboardChart } from "@/components/dashboard/dashboard-chart";
 import { DashboardPaymentsTable } from "@/components/dashboard/dashboard-payments-table";
+import {
+  NetworkSelector,
+  type NetworkFilter,
+} from "@/components/dashboard/network-selector";
+import { getActiveNetworkConfig } from "@/lib/networks/chains";
 import { LogoMark } from "@/components/logo-mark";
 import { PageTransition } from "@/components/page-transition";
 import { useClock, useCursor } from "@/lib/hooks";
@@ -102,8 +107,17 @@ function fmtTime(d: Date): string {
   return d.toTimeString().slice(0, 8);
 }
 
-function DashboardHeader({ lastUpdated }: { lastUpdated: Date | null }) {
+function DashboardHeader({
+  lastUpdated,
+  networkFilter,
+  onNetworkFilter,
+}: {
+  lastUpdated: Date | null;
+  networkFilter: NetworkFilter;
+  onNetworkFilter: (value: NetworkFilter) => void;
+}) {
   const t = useClock();
+  const activeNetwork = getActiveNetworkConfig().name;
   return (
     <header className="db-header">
       <div className="db-header-left">
@@ -112,7 +126,7 @@ function DashboardHeader({ lastUpdated }: { lastUpdated: Date | null }) {
           <span>CrawlPay</span>
         </Link>
         <div className="db-sub">
-          <span>Arc Testnet</span>
+          <span>{activeNetwork} · USDC</span>
           <span className="sep">·</span>
           <span>
             Updated {lastUpdated ? fmtTime(lastUpdated) : fmtTime(t)}
@@ -120,6 +134,7 @@ function DashboardHeader({ lastUpdated }: { lastUpdated: Date | null }) {
         </div>
       </div>
       <div className="db-header-right">
+        <NetworkSelector value={networkFilter} onChange={onNetworkFilter} />
         <span className="db-live">
           <span className="db-live-dot" />
           <span>LIVE</span>
@@ -139,6 +154,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS);
   const [balance, setBalance] = useState<GatewayBalance | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [networkFilter, setNetworkFilter] = useState<NetworkFilter>("all");
 
   async function fetchBalance() {
     try {
@@ -268,7 +284,7 @@ export default function DashboardPage() {
           {totalEarned}
         </>
       ),
-      foot: <>USDC on Arc</>,
+      foot: <>USDC · {getActiveNetworkConfig().name}</>,
     },
     {
       label: "Total Requests",
@@ -326,7 +342,11 @@ export default function DashboardPage() {
       <div className="cursor-ring" />
       <div className="cursor-dot" />
       <main className="db-shell">
-        <DashboardHeader lastUpdated={lastUpdated} />
+        <DashboardHeader
+          lastUpdated={lastUpdated}
+          networkFilter={networkFilter}
+          onNetworkFilter={setNetworkFilter}
+        />
         <div className="db-grid-4">
           {statCards.map((c, i) => (
             <div className="db-card" key={i}>
@@ -346,7 +366,10 @@ export default function DashboardPage() {
           ))}
         </div>
         <DashboardChart data={chartData} />
-        <DashboardPaymentsTable payments={payments} />
+        <DashboardPaymentsTable
+          payments={payments}
+          networkFilter={networkFilter}
+        />
       </main>
     </>
   );

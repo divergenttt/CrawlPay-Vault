@@ -5,6 +5,8 @@ export interface Payment {
   page_url: string;
   amount_usdc: number;
   tx_hash: string;
+  /** Settlement network — `base` (default) or `polygon`. */
+  network?: string | null;
   created_at: string;
 }
 

@@ -12,6 +12,7 @@ import {
   decryptVaultContent,
   resolveVaultUuidFromRequest,
 } from "@/lib/cdr/vault-content";
+import { getSettlementNetworkId } from "@/lib/wallet/settle-usdc-on-base";
 import { verifyArcSignature } from "@/lib/payments/gateway";
 import { savePayment } from "@/lib/payments/supabase";
 
@@ -142,6 +143,7 @@ export async function GET(req: NextRequest) {
   }
 
   const vaultUuid = resolveVaultUuidFromRequest(req);
+  const settlementNetwork = getSettlementNetworkId();
 
   try {
     await savePayment({
@@ -150,6 +152,7 @@ export async function GET(req: NextRequest) {
       page_url,
       amount_usdc: AMOUNT_USDC,
       tx_hash,
+      network: settlementNetwork,
     });
 
     if (vaultUuid != null) {

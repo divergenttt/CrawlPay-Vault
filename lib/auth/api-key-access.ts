@@ -7,9 +7,11 @@ import { getApiKeyTokenFromRequest } from "@/lib/auth/api-key-request";
 import { fetchArcUsdcBalance } from "@/lib/wallet/arc-usdc";
 import { fetchEmbeddedWalletForPrivyUser } from "@/lib/wallet/privy-user-wallet";
 import {
+  getSettlementNetworkId,
   isApiKeyOnchainEnabled,
   settleUsdcFromEmbeddedWallet,
 } from "@/lib/wallet/settle-usdc-on-base";
+import { getNetworkConfig } from "@/lib/networks/chains";
 import {
   privyOnchainConfigError,
 } from "@/lib/wallet/privy-onchain-config";
@@ -108,15 +110,17 @@ export async function authorizeApiKeyForAmount(
   }
 
   const walletAddress = key.owner_wallet_address!.trim();
+  const networkId = getSettlementNetworkId();
+  const networkName = getNetworkConfig(networkId).name;
 
   let balance: number;
   try {
-    balance = await fetchArcUsdcBalance(walletAddress);
+    balance = await fetchArcUsdcBalance(walletAddress, networkId);
   } catch {
     return {
       ok: false,
       status: 503,
-      error: "Could not verify USDC balance on Base. Try again shortly.",
+      error: `Could not verify USDC balance on ${networkName}. Try again shortly.`,
     };
   }
 
@@ -124,7 +128,7 @@ export async function authorizeApiKeyForAmount(
     return {
       ok: false,
       status: 402,
-      error: `Insufficient USDC on Base (${balance.toFixed(3)} available). Top up your wallet to activate agents.`,
+      error: `Insufficient USDC on ${networkName} (${balance.toFixed(3)} available). Top up your wallet to activate agents.`,
     };
   }
 
@@ -166,6 +170,7 @@ export async function settleApiKeyPayment(
         walletId,
         recipient: seller,
         amountUsdc,
+        networkId: getSettlementNetworkId(),
       });
       await recordApiKeyUsage(access.key.id, amountUsdc);
       return { txHash, mode: "onchain" };

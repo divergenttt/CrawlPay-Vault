@@ -4,12 +4,15 @@ import { crawlpay } from "@crawlpay/sdk";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+import { resolveNetworkId } from "@/lib/networks/chains";
+
 const sellerAddress = process.env.NEXT_PUBLIC_SELLER_ADDRESS?.trim();
+const paywallNetwork = resolveNetworkId(process.env.CRAWLPAY_NETWORK);
 
 const paywall = crawlpay({
   wallet: sellerAddress ?? "",
   price: "0.001",
-  network: "base",
+  network: paywallNetwork,
 });
 
 export function middleware(request: NextRequest) {

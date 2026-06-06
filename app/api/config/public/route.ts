@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getActiveNetworkConfig } from "@/lib/networks/chains";
 import { getPrivySignerQuorumId } from "@/lib/wallet/privy-signer-quorum-id";
 import {
   hasPrivyAuthorizationPrivateKey,
@@ -15,5 +16,7 @@ export async function GET() {
     privySignerQuorumId: getPrivySignerQuorumId() ?? null,
     authorizationPrivateKeyConfigured: hasPrivyAuthorizationPrivateKey(),
     onchainServerConfigured: isPrivyOnchainServerConfigured(),
+    network: getActiveNetworkConfig().id,
+    chainId: getActiveNetworkConfig().chainId,
   });
 }

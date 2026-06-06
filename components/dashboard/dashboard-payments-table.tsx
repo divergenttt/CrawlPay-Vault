@@ -2,6 +2,8 @@
 
 import type { Payment } from "@/lib/types";
 import { formatShortTxHash, getScannerLink } from "@/lib/utils";
+import { NetworkBadge } from "@/components/dashboard/network-selector";
+import { resolveNetworkId } from "@/lib/networks/chains";
 
 const BOT_COLORS: Record<string, string> = {
   GPT: "#5e8eff",
@@ -38,19 +40,27 @@ function toNumber(value: number | string | null | undefined): number {
 
 type DashboardPaymentsTableProps = {
   payments: Payment[];
+  networkFilter?: "all" | "base" | "polygon";
 };
 
 export function DashboardPaymentsTable({
   payments,
+  networkFilter = "all",
 }: DashboardPaymentsTableProps) {
-  const rows = payments.slice(0, 100);
+  const filtered =
+    networkFilter === "all"
+      ? payments
+      : payments.filter(
+          (p) => resolveNetworkId(p.network ?? "base") === networkFilter
+        );
+  const rows = filtered.slice(0, 100);
 
   return (
     <section className="db-table-wrap">
       <div className="db-table-head">
         <div className="db-table-title">Recent Payments</div>
         <div className="db-table-sub">
-          last {rows.length} · live · arc testnet
+          last {rows.length} · live · base & polygon
         </div>
       </div>
       <div className="db-table-scroll">
@@ -58,6 +68,7 @@ export function DashboardPaymentsTable({
           <thead>
             <tr>
               <th>Bot</th>
+              <th>Network</th>
               <th>Page</th>
               <th>Amount</th>
               <th>Tx Hash</th>
@@ -67,14 +78,15 @@ export function DashboardPaymentsTable({
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: "center", color: "var(--gray)" }}>
+                <td colSpan={6} style={{ textAlign: "center", color: "var(--gray)" }}>
                   No payments yet
                 </td>
               </tr>
             ) : (
               rows.map((p) => {
                 const color = botColor(p.bot_name);
-                const scannerUrl = getScannerLink(p.tx_hash);
+                const networkId = resolveNetworkId(p.network ?? "base");
+                const scannerUrl = getScannerLink(p.tx_hash, networkId);
                 const hashLabel = formatShortTxHash(p.tx_hash);
                 return (
                   <tr key={p.id}>
@@ -89,6 +101,9 @@ export function DashboardPaymentsTable({
                         />
                         {p.bot_name}
                       </span>
+                    </td>
+                    <td>
+                      <NetworkBadge network={p.network} />
                     </td>
                     <td>
                       <div className="cell-page">{p.page_url}</div>

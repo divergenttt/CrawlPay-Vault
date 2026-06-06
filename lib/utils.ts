@@ -1,12 +1,16 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { getNetworkExplorerTxUrl, resolveNetworkId } from "@/lib/networks/chains"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-/** Arc Testnet explorer link for on-chain EVM tx hashes only. */
-export function getScannerLink(txHash: string): string {
+/** EVM explorer link — Base/Polygon mainnet, or Arc testnet legacy fallback. */
+export function getScannerLink(
+  txHash: string,
+  network?: string | null
+): string {
   if (!txHash?.trim()) return "";
   if (txHash.includes("-") && txHash.length < 40) {
     return "";
@@ -15,6 +19,12 @@ export function getScannerLink(txHash: string): string {
   if (!/^0x[0-9a-fA-F]{64}$/.test(normalized)) {
     return "";
   }
+
+  const networkId = resolveNetworkId(network ?? undefined);
+  if (networkId === "base" || networkId === "polygon") {
+    return getNetworkExplorerTxUrl(normalized, networkId);
+  }
+
   return `https://testnet.arcscan.app/tx/${normalized}`;
 }
 

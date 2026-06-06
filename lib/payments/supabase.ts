@@ -6,6 +6,7 @@ CREATE TABLE payments (
   page_url text DEFAULT '/',
   amount_usdc numeric DEFAULT 0.001,
   tx_hash text,
+  network text DEFAULT 'base',
   created_at timestamptz DEFAULT now()
 );
 */
