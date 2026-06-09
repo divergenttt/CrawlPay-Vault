@@ -13,6 +13,7 @@ import {
   resolveVaultUuidFromRequest,
 } from "@/lib/cdr/vault-content";
 import { getSettlementNetworkId } from "@/lib/wallet/settle-usdc-on-base";
+import { getNetworkHeaderFromRequest } from "@/lib/networks/resolve-settlement";
 import { verifyArcSignature } from "@/lib/payments/gateway";
 import { savePayment } from "@/lib/payments/supabase";
 
@@ -94,6 +95,9 @@ export async function GET(req: NextRequest) {
 
   let tx_hash: string;
   let apiKeyName: string | undefined;
+  let settlementNetwork = getSettlementNetworkId({
+    requestedNetwork: getNetworkHeaderFromRequest(req) ?? undefined,
+  });
 
   if (apiKeyToken) {
     const access = await authorizeApiKeyForAmount(req, AMOUNT_USDC);
@@ -103,6 +107,7 @@ export async function GET(req: NextRequest) {
         { status: access.status }
       );
     }
+    settlementNetwork = access.networkId;
     try {
       const settlement = await settleApiKeyPayment(access, AMOUNT_USDC);
       tx_hash = settlement.txHash;
@@ -143,7 +148,6 @@ export async function GET(req: NextRequest) {
   }
 
   const vaultUuid = resolveVaultUuidFromRequest(req);
-  const settlementNetwork = getSettlementNetworkId();
 
   try {
     await savePayment({

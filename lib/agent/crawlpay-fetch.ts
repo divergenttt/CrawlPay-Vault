@@ -1,17 +1,27 @@
 /**
- * Agent HTTP helper: CrawlPay API key (Base ledger) or Arc x402 headers.
- * Set CRAWLPAY_API_KEY=cr_live_… for API-key billing against the owner's Base wallet.
+ * Agent HTTP helper: CrawlPay API key (Base/Polygon) or Arc x402 headers.
+ * Set CRAWLPAY_API_KEY=cr_live_… for API-key billing against the owner's wallet.
  */
+
+export type CrawlPayAgentNetwork = "base" | "polygon";
 
 export type CrawlPayFetchOptions = {
   apiKey?: string;
   botUserAgent?: string;
+  /** Settlement network sent as X-CrawlPay-Network (falls back to CRAWLPAY_NETWORK). */
+  network?: CrawlPayAgentNetwork;
   /** Arc x402 fallback when no API key */
   paymentSignature?: string;
   paymentBotAddress?: string;
   vaultUuid?: string;
   headers?: Record<string, string>;
 };
+
+function resolveNetworkHeader(network?: string): string | undefined {
+  const raw = (network ?? process.env.CRAWLPAY_NETWORK)?.trim().toLowerCase();
+  if (raw === "base" || raw === "polygon") return raw;
+  return undefined;
+}
 
 export function resolveCrawlPayApiKey(explicit?: string): string | undefined {
   const key =
@@ -31,6 +41,11 @@ export function buildCrawlPayAgentHeaders(
       "GPTBot (CrawlPay-Agent/1.0)",
     ...options.headers,
   };
+
+  const networkHeader = resolveNetworkHeader(options.network);
+  if (networkHeader) {
+    headers["X-CrawlPay-Network"] = networkHeader;
+  }
 
   const apiKey = resolveCrawlPayApiKey(options.apiKey);
   if (apiKey) {
@@ -57,6 +72,32 @@ export async function crawlpayAgentFetch(
 ): Promise<Response> {
   return fetch(url, {
     headers: buildCrawlPayAgentHeaders(options),
+    cache: "no-store",
+  });
+}
+
+/** API-key fetch with optional x402 retry (same behavior as MCP fetchPaidPage). */
+export async function fetchPaidPage(
+  url: string,
+  network?: CrawlPayAgentNetwork
+): Promise<Response> {
+  const apiKey = resolveCrawlPayApiKey();
+  const first = await crawlpayAgentFetch(url, { network });
+
+  if (apiKey || first.status !== 402) {
+    return first;
+  }
+
+  const botAddress = process.env.NEXT_PUBLIC_SELLER_ADDRESS?.trim() ?? "";
+  return fetch(url, {
+    headers: {
+      ...buildCrawlPayAgentHeaders({ network }),
+      "payment-signature": "0xsimulated",
+      "payment-bot-address": botAddress,
+      ...(first.headers.get("x-crawlpay-vault")
+        ? { "x-crawlpay-vault": first.headers.get("x-crawlpay-vault")! }
+        : {}),
+    },
     cache: "no-store",
   });
 }

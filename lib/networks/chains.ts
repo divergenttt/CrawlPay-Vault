@@ -37,7 +37,7 @@ export const CRAWLPAY_NETWORKS: Record<CrawlPayNetworkId, CrawlPayNetworkConfig>
     name: "Polygon",
     rpc:
       process.env.NEXT_PUBLIC_RPC_POLYGON?.trim() ||
-      "https://polygon-rpc.com",
+      "https://polygon-bor.publicnode.com",
     usdcAddress: (process.env.NEXT_PUBLIC_USDC_POLYGON?.trim() ||
       "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359") as `0x${string}`,
     circleGateway: true,
@@ -45,6 +45,20 @@ export const CRAWLPAY_NETWORKS: Record<CrawlPayNetworkId, CrawlPayNetworkConfig>
     viemChain: polygon,
   },
 };
+
+/** Primary RPC plus public fallbacks (deduped). Used when balance reads fail. */
+export function getNetworkRpcUrls(id: CrawlPayNetworkId): string[] {
+  const primary = CRAWLPAY_NETWORKS[id].rpc;
+  const fallbacks: Record<CrawlPayNetworkId, string[]> = {
+    base: ["https://mainnet.base.org", "https://base.publicnode.com"],
+    polygon: [
+      "https://polygon-bor.publicnode.com",
+      "https://1rpc.io/matic",
+      "https://polygon.drpc.org",
+    ],
+  };
+  return [...new Set([primary, ...fallbacks[id]])];
+}
 
 export function isCrawlPayNetworkId(value: string | undefined | null): value is CrawlPayNetworkId {
   return value === "base" || value === "polygon";

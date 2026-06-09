@@ -3,11 +3,12 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** Node-only packages — never webpack-bundle (CDR / IPFS stack). */
+/** Node-only packages — never webpack-bundle (CDR / IPFS / Circle Gateway). */
 const nodeOnlyPackages = [
   "@piplabs/cdr-sdk",
   "@piplabs/cdr-crypto",
   "@piplabs/cdr-contracts",
+  "@circle-fin/x402-batching",
   "multiformats",
   "helia",
   "@helia/unixfs",
@@ -41,12 +42,21 @@ const nextConfig = {
       ...multiformatsAliases,
     };
 
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings ?? []),
+      {
+        module: /virtualMasterPool/,
+        message: /Critical dependency: the request of a dependency is an expression/,
+      },
+    ];
+
     if (isServer) {
       const prev = config.externals;
       const extra = [
         "@piplabs/cdr-sdk",
         "@piplabs/cdr-crypto",
         "@piplabs/cdr-contracts",
+        "@circle-fin/x402-batching",
         "multiformats",
         "helia",
         "@helia/unixfs",
@@ -59,6 +69,7 @@ const nextConfig = {
             request === "multiformats" ||
             request.startsWith("multiformats/") ||
             request.startsWith("@piplabs/") ||
+            request.startsWith("@circle-fin/") ||
             request === "helia" ||
             request.startsWith("helia/") ||
             request.startsWith("@helia/")

@@ -4,10 +4,11 @@ import { crawlpay } from "@crawlpay/sdk";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { resolveNetworkId } from "@/lib/networks/chains";
-
 const sellerAddress = process.env.NEXT_PUBLIC_SELLER_ADDRESS?.trim();
-const paywallNetwork = resolveNetworkId(process.env.CRAWLPAY_NETWORK);
+const paywallNetwork =
+  process.env.CRAWLPAY_NETWORK?.trim().toLowerCase() === "polygon"
+    ? "polygon"
+    : "base";
 
 const paywall = crawlpay({
   wallet: sellerAddress ?? "",
@@ -28,6 +29,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   runtime: "nodejs",
-  // Exclude /connect/* so OAuth callbacks are not intercepted by the x402 paywall.
-  matcher: ["/((?!api|_next|favicon|connect|.*\\..*).*)"],
+  // Exclude /connect/* and /dashboard/* (Privy OAuth + heavy client bundles).
+  matcher: ["/((?!api|_next|favicon|connect|dashboard|.*\\..*).*)"],
 };

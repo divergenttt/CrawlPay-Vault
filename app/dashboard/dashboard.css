@@ -504,3 +504,413 @@
     width: 100%;
   }
 }
+
+/* ============================ PERSONAL CABINET ============================ */
+.db-cabinet {
+  --cabinet-bg: #0a0a0a;
+  --cabinet-card: #111111;
+  --cabinet-border: #1a1a1a;
+  --cabinet-coral: #e8647a;
+  --cabinet-blue: #7ab3e8;
+}
+
+.db-cabinet-section {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.db-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.db-section-title {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--white);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.db-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+  padding: 4px;
+  border: 1px solid var(--cabinet-border);
+  border-radius: 100px;
+  background: var(--cabinet-card);
+  width: fit-content;
+}
+
+.db-tab {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray);
+  padding: 10px 18px;
+  border-radius: 100px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.db-tab:hover { color: var(--white); }
+.db-tab.is-active {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.db-tab-panel { min-height: 320px; }
+
+.db-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.db-cabinet-card {
+  background: var(--cabinet-card) !important;
+  border-color: var(--cabinet-border) !important;
+}
+
+.db-accent-coral { color: var(--cabinet-coral); }
+.db-accent-blue { color: var(--cabinet-blue); }
+
+.db-error {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--cabinet-coral);
+}
+
+.db-success {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--c-grn);
+}
+
+.db-muted {
+  font-size: 13px;
+  color: var(--gray);
+  margin: 0;
+}
+
+.db-link { color: var(--cabinet-blue); text-decoration: underline; }
+
+.db-activity {
+  border: 1px solid var(--cabinet-border);
+  border-radius: 12px;
+  background: var(--cabinet-card);
+  overflow: hidden;
+}
+
+.db-activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.db-activity-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) 2fr auto auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 18px;
+  border-top: 1px solid var(--cabinet-border);
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+}
+
+.db-activity-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.db-activity-bot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.db-bot-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.db-activity-name {
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.db-activity-url {
+  color: var(--gray);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.db-activity-amount { color: var(--white); }
+.db-activity-time { color: var(--gray2); white-space: nowrap; }
+
+.db-badge {
+  display: inline-flex;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 100px;
+  border: 1px solid var(--cabinet-border);
+}
+
+.db-badge--active {
+  color: var(--c-grn);
+  border-color: rgba(74, 240, 168, 0.35);
+  background: rgba(74, 240, 168, 0.08);
+}
+
+.db-badge--pending {
+  color: var(--cabinet-coral);
+  border-color: rgba(232, 100, 122, 0.35);
+  background: rgba(232, 100, 122, 0.08);
+}
+
+.db-badge--free {
+  color: var(--cabinet-blue);
+  border-color: rgba(122, 179, 232, 0.35);
+  background: rgba(122, 179, 232, 0.08);
+}
+
+.db-settings-block {
+  border: 1px solid var(--cabinet-border);
+  border-radius: 12px;
+  background: var(--cabinet-card);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.db-block-title {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 13px;
+  color: var(--white);
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.db-input {
+  width: 100%;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 13px;
+  color: var(--white);
+  background: var(--cabinet-bg);
+  border: 1px solid var(--cabinet-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.db-input--narrow { max-width: 120px; }
+
+.db-btn {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--cabinet-border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.db-btn:hover { border-color: rgba(255, 255, 255, 0.2); }
+.db-btn--ghost { background: transparent; }
+.db-btn--primary {
+  background: rgba(232, 100, 122, 0.15);
+  border-color: rgba(232, 100, 122, 0.4);
+  align-self: flex-start;
+}
+
+.db-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.db-domain-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.db-domain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.db-domain-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--cabinet-border);
+  border-radius: 8px;
+  background: var(--cabinet-bg);
+}
+
+.db-domain-name {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 13px;
+  color: var(--white);
+}
+
+.db-url-rules { display: flex; flex-direction: column; gap: 10px; }
+.db-url-rules-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.db-url-rule-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.db-bot-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.db-bot-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--cabinet-border);
+  border-radius: 8px;
+  background: var(--cabinet-bg);
+}
+
+.db-bot-label {
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--white);
+}
+
+.db-bot-co {
+  display: block;
+  font-size: 11px;
+  color: var(--gray);
+}
+
+.db-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--gray);
+  cursor: pointer;
+}
+
+.db-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.db-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  color: var(--white);
+  cursor: pointer;
+}
+
+.db-code-wrap {
+  border: 1px solid var(--cabinet-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--cabinet-card);
+}
+
+.db-code-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cabinet-border);
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 11px;
+  color: var(--gray);
+}
+
+.db-code {
+  margin: 0;
+  padding: 16px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--white);
+  overflow-x: auto;
+  background: var(--cabinet-bg);
+}
+
+.db-withdraw-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .db-grid-3 { grid-template-columns: 1fr; }
+  .db-activity-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .db-bot-row {
+    grid-template-columns: 1fr;
+  }
+}
+

@@ -14,6 +14,8 @@ Create keys at `/connect/api-keys`. Server checks Base balance and daily/per-req
 1. `supabase/migrations/20260527000000_auth_tables.sql`
 2. `supabase/migrations/20260528120000_api_key_usage.sql`
 3. `supabase/migrations/20260528130000_api_keys_wallet.sql`
+4. `supabase/migrations/20260603000000_payments_network.sql`
+5. `supabase/migrations/20260603100000_user_settings.sql`
 
 ## Test API key (local or prod)
 

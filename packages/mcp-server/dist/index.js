@@ -32,16 +32,27 @@ function validateArgs(args) {
     if (!args || typeof args !== "object") {
         throw new Error("Invalid arguments: object expected");
     }
-    const { url, amount } = args;
+    const { url, amount, network } = args;
     if (typeof url !== "string" || url.trim().length === 0) {
         throw new Error("Invalid arguments: `url` must be a non-empty string");
     }
     if (typeof amount !== "string" || amount.trim().length === 0) {
         throw new Error("Invalid arguments: `amount` must be a non-empty string");
     }
+    let parsedNetwork;
+    if (network !== undefined && network !== null && network !== "") {
+        if (network !== "base" && network !== "polygon") {
+            throw new Error('Invalid arguments: `network` must be "base" or "polygon"');
+        }
+        parsedNetwork = network;
+    }
     // Validate numeric amount format in USDC precision.
     (0, viem_1.parseUnits)(amount, 6);
-    return { url: url.trim(), amount: amount.trim() };
+    return {
+        url: url.trim(),
+        amount: amount.trim(),
+        network: parsedNetwork,
+    };
 }
 server.setRequestHandler(types_js_1.ListToolsRequestSchema, async () => {
     console.error("[crawlpay-mcp] Listing tools");
@@ -63,6 +74,11 @@ server.setRequestHandler(types_js_1.ListToolsRequestSchema, async () => {
                             type: "string",
                             description: 'Requested USDC amount (example: "0.001")',
                         },
+                        network: {
+                            type: "string",
+                            enum: ["base", "polygon"],
+                            description: "Optional settlement network: 'base' (default) or 'polygon'",
+                        },
                     },
                     required: ["url", "amount"],
                     additionalProperties: false,
@@ -77,12 +93,12 @@ server.setRequestHandler(types_js_1.CallToolRequestSchema, async (request) => {
     if (name !== TOOL_NAME) {
         throw new Error(`Unknown tool: ${name}`);
     }
-    const { url, amount } = validateArgs(args);
-    console.error(`[crawlpay-mcp] 402 context parsed. url=${url} amount=${amount}`);
+    const { url, amount, network } = validateArgs(args);
+    console.error(`[crawlpay-mcp] 402 context parsed. url=${url} amount=${amount} network=${network ?? "default"}`);
     const apiKey = (0, crawlpay_fetch_1.resolveCrawlPayApiKey)();
     if (apiKey) {
-        console.error("[crawlpay-mcp] Retrying with CrawlPay API key (Base wallet)");
-        const res = await (0, crawlpay_fetch_1.fetchPaidPage)(url);
+        console.error("[crawlpay-mcp] Retrying with CrawlPay API key");
+        const res = await (0, crawlpay_fetch_1.fetchPaidPage)(url, network);
         const body = await res.text();
         return {
             content: [
@@ -91,6 +107,7 @@ server.setRequestHandler(types_js_1.CallToolRequestSchema, async (request) => {
                     text: `CrawlPay fetch (${res.status})\n` +
                         `URL: ${url}\n` +
                         `Amount: ${amount} USDC\n` +
+                        `Network: ${network ?? process.env.CRAWLPAY_NETWORK ?? "base"}\n` +
                         `Auth: API key (cr_live_…)\n\n` +
                         body.slice(0, 4000),
                 },

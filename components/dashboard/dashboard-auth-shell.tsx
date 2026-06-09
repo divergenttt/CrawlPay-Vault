@@ -7,7 +7,6 @@ import {
   SOCIAL_PROVIDERS,
   useSocialLogin,
 } from "@/lib/auth/use-social-login";
-import { PrivyPreload } from "@/components/privy-preload";
 
 function DashboardSignInGate({
   error,
@@ -26,11 +25,11 @@ function DashboardSignInGate({
     <div className="db-shell flex min-h-[60vh] flex-col items-center justify-center px-6">
       <div className="max-w-md text-center">
         <h1 className="mb-2 font-mono text-lg tracking-wide text-white">
-          Seller dashboard
+          Personal cabinet
         </h1>
         <p className="mb-6 text-sm text-zinc-400">
-          Sign in to view payments, stats, and gateway balance. Access is limited
-          to authorized accounts.
+          Sign in with Google, GitHub, Telegram, or X to manage domains, pricing,
+          and view bot payments.
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           {SOCIAL_PROVIDERS.map(({ id, label }) => (
@@ -86,34 +85,23 @@ export function DashboardAuthShell({
 
   if (!isSignedIn && !ready) {
     return (
-      <>
-        <PrivyPreload />
-        <div className="db-shell flex min-h-[40vh] items-center justify-center text-zinc-500">
-          Loading…
-        </div>
-      </>
+      <div className="db-shell flex min-h-[40vh] items-center justify-center text-zinc-500">
+        Loading…
+      </div>
     );
   }
 
   if (!isSignedIn) {
     return (
-      <>
-        <PrivyPreload />
-        <DashboardSignInGate
-          error={socialLoginError}
-          onProvider={signInWithProvider}
-          activeProvider={activeProvider}
-          pending={authPending}
-          ready={ready}
-        />
-      </>
+      <DashboardSignInGate
+        error={socialLoginError}
+        onProvider={signInWithProvider}
+        activeProvider={activeProvider}
+        pending={authPending}
+        ready={ready}
+      />
     );
   }
 
-  return (
-    <>
-      <PrivyPreload />
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }

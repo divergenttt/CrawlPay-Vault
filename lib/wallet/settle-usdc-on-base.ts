@@ -2,10 +2,14 @@ import "server-only";
 
 import { encodeFunctionData, erc20Abi, parseUnits } from "viem";
 import {
-  getActiveNetworkConfig,
   getNetworkConfig,
   type CrawlPayNetworkId,
 } from "@/lib/networks/chains";
+import {
+  getDefaultSettlementNetworkId,
+  resolveSettlementNetwork,
+  type SettlementNetworkContext,
+} from "@/lib/networks/resolve-settlement";
 import { getPrivyNodeClient } from "./privy-node-client";
 import { getPrivyAuthorizationContext } from "./privy-authorization-context";
 
@@ -58,7 +62,12 @@ export async function settleUsdcFromEmbeddedWallet(params: {
   return { txHash };
 }
 
-/** Active settlement network for API-key billing (env `CRAWLPAY_NETWORK`, default base). */
-export function getSettlementNetworkId(): CrawlPayNetworkId {
-  return getActiveNetworkConfig().id;
+/** Active settlement network (env default; pass context for header / user preference). */
+export function getSettlementNetworkId(
+  context?: SettlementNetworkContext
+): CrawlPayNetworkId {
+  if (context && Object.keys(context).length > 0) {
+    return resolveSettlementNetwork(context);
+  }
+  return getDefaultSettlementNetworkId();
 }

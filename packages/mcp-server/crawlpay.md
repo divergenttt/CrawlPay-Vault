@@ -17,6 +17,7 @@ and requires $0.001 USDC payment per page.
 **Inputs:**
 - url: The URL that returned 402
 - amount: Payment amount in USDC (usually "0.001")
+- network: Optional — `"base"` (default) or `"polygon"` (sent as `X-CrawlPay-Network`)
 
 **Flow:**
 1. If CRAWLPAY_API_KEY is set: pays automatically via API key, returns content
