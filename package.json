@@ -2,17 +2,13 @@
   "name": "crawlpay",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "packages/mcp-server",
-    "packages/eliza-plugin"
-  ],
   "scripts": {
     "dev:web": "next dev",
     "build:web": "next build",
     "start:web": "next start",
     "lint:web": "next lint",
-    "dev:mcp": "npm run dev -w packages/mcp-server",
-    "build:mcp": "npm run build -w packages/mcp-server",
+    "dev:mcp": "npm run dev --prefix packages/mcp-server",
+    "build:mcp": "npm run build --prefix packages/mcp-server",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
